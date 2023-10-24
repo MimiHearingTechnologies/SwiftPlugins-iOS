@@ -32,7 +32,7 @@ class Executor {
             }
         }
 
-        var config: String {
+        var configPath: String {
             switch self {
             case .pullPhrase:
                 return ".phrase.yml"
