@@ -8,7 +8,7 @@
 import Foundation
 import PackagePlugin
 
-struct PhraseCommandPlugin: CommandPlugin {
+struct LocalizationCommand: CommandPlugin {
     func performCommand(context: PluginContext, arguments externalArgs: [String]) async throws {
         Diagnostics.warning("Command only supported as Xcode command plugin")
     }
@@ -19,7 +19,7 @@ struct PhraseCommandPlugin: CommandPlugin {
 import XcodeProjectPlugin
 
 @main
-extension PhraseCommandPlugin: XcodeCommandPlugin {
+extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "PluginExecutable")
 
