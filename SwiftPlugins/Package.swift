@@ -18,7 +18,7 @@ let package = Package(
             capability: .command(
                 intent: .custom(
                     verb: "LocalizationCommand",
-                    description: "Pull translations, verifies them & generate Localization.swift using SwiftGen"
+                    description: "Pulls translations from Phrase, verifies them & generates Localization.swift using SwiftGen"
                 ),
                 permissions: [
                     .writeToPackageDirectory(reason: "This command generates source code"),
