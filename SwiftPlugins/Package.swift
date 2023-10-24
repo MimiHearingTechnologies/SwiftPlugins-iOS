@@ -6,17 +6,29 @@ import PackageDescription
 let package = Package(
     name: "SwiftPlugins",
     products: [
-        .plugin(
-            name: "LocalizationCommandPlugin",
-            targets: ["LocalizationCommandPlugin"]),
+        .executable(name: "LocalizationExecutable", targets: ["LocalizationExecutable"]),
+        .plugin(name: "LocalizationCommand", targets: ["LocalizationCommand"]),
     ],
     targets: [
+        .executableTarget(
+            name: "LocalizationExecutable"
+        ),
         .plugin(
-            name: "LocalizationCommandPlugin",
-            capability: .command(intent: .custom(
-                verb: "LocalizationCommandPlugin",
-                description: "Pull translations, verifies them & generate Localization.swift using SwiftGen"
-            ))
+            name: "LocalizationCommand",
+            capability: .command(
+                intent: .custom(
+                    verb: "LocalizationCommand",
+                    description: "Pull translations, verifies them & generate Localization.swift using SwiftGen"
+                ),
+                permissions: [
+                    .writeToPackageDirectory(reason: "This command generates source code"),
+                    .allowNetworkConnections(
+                        scope: .all(),
+                        reason: "Network connection is needed to pull the translation from Phrase."
+                    )
+                ]
+            ),
+            dependencies: ["LocalizationExecutable"]
         ),
     ]
 )
