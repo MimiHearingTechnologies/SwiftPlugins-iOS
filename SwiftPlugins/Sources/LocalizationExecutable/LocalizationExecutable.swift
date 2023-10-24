@@ -4,10 +4,14 @@ import Foundation
 class LocalizationExecutable {
 
   static func main() {
+      
+      print("Starting to pull files from Phrase...")
       Executor.executeShell(.pullPhrase)
 
+      print("Starting to verify translations")
       Executor.verifyTranslations()
-      
+
+      print("Starting to generate type safe Localization.swift")
       Executor.executeShell(.generateLocalization)
   }
 }
