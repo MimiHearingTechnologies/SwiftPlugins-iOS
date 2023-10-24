@@ -26,7 +26,7 @@ extension LocalizationCommand: XcodeCommandPlugin {
         do {
             try exec.run(arguments: externalArgs, context: context, environment: nil)
         } catch let error {
-            Diagnostics.error(error)
+            print(error)
         }
     }
 }

@@ -14,15 +14,17 @@ class LocalizationExecutable {
 
 class Executor {
 
+    static let defaultHomebrewPath = "/opt/homebrew/bin/"
+
     enum Command {
         case pullPhrase, generateLocalization
 
         var cmd: String {
             switch self {
             case .pullPhrase:
-                return "/opt/homebrew/bin/phrase pull"
+                return Executor.defaultHomebrewPath + "phrase pull"
             case .generateLocalization:
-                return "/opt/homebrew/bin/swiftgen config run --verbose"
+                return Executor.defaultHomebrewPath + "swiftgen config run --verbose"
             }
         }
 
