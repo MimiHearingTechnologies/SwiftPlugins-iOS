@@ -18,6 +18,7 @@ class LocalizationExecutable {
 
 class Executor {
 
+    // the path where homebrew is installed by default
     static let defaultHomebrewPath = "/opt/homebrew/bin/"
 
     enum Command {
@@ -32,6 +33,7 @@ class Executor {
             }
         }
 
+        // relative path
         var configPath: String {
             switch self {
             case .pullPhrase:
@@ -63,7 +65,7 @@ class Executor {
         process.standardOutput = pipe
         process.standardError = pipe
 
-        let configPath = "\(process.currentDirectoryPath)/../\(command.config)"
+        let configPath = "\(process.currentDirectoryPath)/../\(command.configPath)"
         process.arguments = ["-c", "\(command.cmd) --config \(configPath)"]
 
         process.launchPath = "/bin/zsh"
