@@ -20,7 +20,6 @@ struct LocalizationCommand: CommandPlugin {
     }
 }
 
-
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
 

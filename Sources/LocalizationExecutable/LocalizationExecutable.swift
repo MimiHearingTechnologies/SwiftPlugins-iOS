@@ -2,67 +2,65 @@ import Foundation
 import OSLog
 import ArgumentParser
 
+protocol ExecutableCommand {
+
+    var type: Executor.Command { get set }
+
+    var configPath: String? { get set }
+
+    var command: String { get }
+}
+
 @main
 struct LocalizationExecutable: ParsableCommand {
+
+    // MARK: - Parsed Command line arguments
 
     @Option(help: "Target module")
     var target: String?
 
-    @Option(help: "Path to the Phrase config")
+    @Option(help: "Phrase config path")
     var phraseConfig: String
 
-    @Option(help: "Path to the SwiftGen config")
+    @Option(help: "SwiftGen config path")
     var swiftgenConfig: String
+
+    // Modules used for verifying translations
+    @Argument(parsing: .captureForPassthrough) public var modules: [String]
 
     mutating func run() throws {
 
-        let executor = Executor(phraseConfig: phraseConfig, swiftgenConfig: swiftgenConfig)
+        let executor = Executor()
 
         print("Starting to pull files from Phrase...")
-        executor.executeShell(.pullPhrase)
+        print(Executor.executeShell(.pullPhrase(config: phraseConfig)))
 
         print("Starting to verify translations")
         Executor.verifyTranslations()
 
         print("Starting to generate Localization.swift")
-        executor.executeShell(.generateLocalization)
+        print(Executor.executeShell(.generateLocalization(config: swiftgenConfig)))
     }
 }
 
-class Executor {
+// MARK: - Executor
 
-    var phraseConfig: String
-    var swiftgenConfig: String
+class Executor {
 
     // the path where homebrew is installed by default
     static let defaultHomebrewPath = "/opt/homebrew/bin/"
 
     enum Command {
-        case pullPhrase, generateLocalization
+        case pullPhrase(config: String), generateLocalization(config: String)
 
         var cmd: String {
             switch self {
-            case .pullPhrase:
-                return Executor.defaultHomebrewPath + "phrase pull"
-            case .generateLocalization:
-                return Executor.defaultHomebrewPath + "swiftgen config run --verbose"
+            case let .pullPhrase(config):
+                return Executor.defaultHomebrewPath + "phrase pull --config \(config)"
+            case let .generateLocalization(config):
+                return Executor.defaultHomebrewPath + "swiftgen config run --verbose --config \(config)"
             }
         }
-
-        // relative path
-        var configPath: String {
-            switch self {
-            case .pullPhrase:
-                return ".phrase.yml"
-            case .generateLocalization:
-                return "SwiftGen/swiftgen-localization.yml"
-            }
-        }
-    }
-
-    init(phraseConfig: String, swiftgenConfig: String) {
-        self.phraseConfig = phraseConfig
-        self.swiftgenConfig = swiftgenConfig
     }
 
     class func verifyTranslations() {
@@ -72,13 +70,8 @@ class Executor {
         verificator.verifyTranslations(shouldGenerateReportFile: shouldGenerateReportFile)
     }
 
-    func executeShell(_ command: Command) {
-        print(Self.shell(command))
-    }
-
-    @discardableResult
-    private class func shell(_ command: Command) -> String {
-// This check is needed bacause Process is only available on macOS
+    class func executeShell(_ command: Command) -> String {
+        // This check is needed bacause Process is only available on macOS
 #if os(macOS)
         let process = Process()
         let pipe = Pipe()
@@ -86,8 +79,7 @@ class Executor {
         process.standardOutput = pipe
         process.standardError = pipe
 
-        let configPath = "\(process.currentDirectoryPath)/../\(command.configPath)"
-        process.arguments = ["-c", "\(command.cmd) --config \(configPath)"]
+        process.arguments = ["-c", command.cmd]
 
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process.standardInput = nil
