@@ -35,8 +35,10 @@ struct LocalizationExecutable: ParsableCommand {
         print("Starting to pull files from Phrase...")
         print(Executor.executeShell(.pullPhrase(config: phraseConfig)))
 
-        print("Starting to verify translations")
-        Executor.verifyTranslations()
+        if !modules.isEmpty {
+            print("Starting to verify translations")
+            Executor.verifyTranslations(modules: modules)
+        }
 
         print("Starting to generate Localization.swift")
         print(Executor.executeShell(.generateLocalization(config: swiftgenConfig)))
@@ -63,8 +65,8 @@ class Executor {
         }
     }
 
-    class func verifyTranslations() {
-        let verificator = TranslationsVerificator()
+    class func verifyTranslations(modules: [String]) {
+        let verificator = TranslationsVerificator(with: modules)
 
         let shouldGenerateReportFile = CommandLine.arguments.contains(generateReportFileArgumentName)
         verificator.verifyTranslations(shouldGenerateReportFile: shouldGenerateReportFile)

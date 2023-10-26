@@ -35,12 +35,18 @@ class TranslationsVerificator {
     let fileHelper = FileHelper()
     let localizableStringsFileParser = LocalizableStringsFileParser()
 
+    let modules: [String]
+
+    init(with modules: [String]) {
+        self.modules = modules
+    }
+
     func verifyTranslations(shouldGenerateReportFile: Bool = false) {
-        var results: [(VerificationResult, Module)] = []
+        var results: [(VerificationResult, String)] = []
         log("---")
         log("📖 📖 📖 Starting verification for missing translations... 📖 📖 📖\n")
-        Module.allSupportedForLocalization.forEach {
-            log("📦 📦 Module: \($0.rawValue) 📦 📦\n", type: .report)
+        modules.forEach {
+            log("📦 📦 Module: \($0) 📦 📦\n", type: .report)
             let result = verify(module: $0)
             results.append((result, $0))
             log("\n", type: .report)
@@ -48,7 +54,7 @@ class TranslationsVerificator {
 
         if results.map({ $0.0 }).contains(.failure) {
             let failedModulesList = results.filter { $0.0 == .failure }
-            log("\n\n ❌ Verification failed for modules: \(failedModulesList.map{ "'\($0.1.rawValue)'" }.joined(separator: ", "))", type: .report)
+            log("\n\n ❌ Verification failed for modules: \(failedModulesList.map{ "'\($0.1)'" }.joined(separator: ", "))", type: .report)
 
             if shouldGenerateReportFile {
                 let logString = reportLog.joined(separator: "\n")
@@ -65,7 +71,7 @@ private extension TranslationsVerificator {
         fileHelper.filePaths(in: sourcesDirectory, forFile: localizableFileName)
     }
 
-    func filterPaths(for modules: [Module], from paths: [FileHelper.FileURL]) -> [FileHelper.FileURL] {
+    func filterPaths(for modules: [String], from paths: [FileHelper.FileURL]) -> [FileHelper.FileURL] {
         paths
             .map { fileUrl in
                 let firstComponent: () -> String? = {
@@ -78,16 +84,16 @@ private extension TranslationsVerificator {
                 return (fileUrl, firstComponent())
             }
             .filter { (fileUrl, module) in module != nil }
-            .filter { (fileUrl, module) in modules.map{$0.rawValue}.contains(module) }.map { $0.0 }
+            .filter { (fileUrl, module) in modules.map{$0}.contains(module) }.map { $0.0 }
     }
 
-    func verify(module: Module) -> VerificationResult {
+    func verify(module: String) -> VerificationResult {
         var result = VerificationResult.success
 
         let files = localizableFiles(for: module)
 
         guard let reference = files.first(where: { $0.languageCode == referenceLanguageCode }) else {
-            log("❌ Reference file for module '\(module.rawValue)' does not exist. Expected language code: '\(referenceLanguageCode)'", type: .report)
+            log("❌ Reference file for module '\(module)' does not exist. Expected language code: '\(referenceLanguageCode)'", type: .report)
             return .failure
         }
         let toBeVerified = files.filter { !["en", "Base"].contains($0.languageCode) }
@@ -96,23 +102,23 @@ private extension TranslationsVerificator {
             let keysForMissingTranslations = Set(reference.elements.map { $0.key }).subtracting(Set(file.elements.map { $0.key }))
 
             if !keysForMissingTranslations.isEmpty {
-                log("❌ Missing translations found in `\(module.rawValue)` module for language code '\(file.languageCode)'. List of missing keys:", type: .report)
+                log("❌ Missing translations found in `\(module)` module for language code '\(file.languageCode)'. List of missing keys:", type: .report)
                 var dumpString = String()
                 dump(keysForMissingTranslations, to: &dumpString)
                 log(dumpString, type: .report)
                 result = .failure
             } else {
-                log("✅ No missing translations found in `\(module.rawValue)` module for language code '\(file.languageCode)' 👏 \n")
+                log("✅ No missing translations found in `\(module)` module for language code '\(file.languageCode)' 👏 \n")
             }
         }
 
         if result == .success {
-            log("✅ All good in '\(module.rawValue)' module 👏", type: .report)
+            log("✅ All good in '\(module)' module 👏", type: .report)
         }
         return result
     }
 
-    func localizableFiles(for module: Module) -> [LocalizableFile] {
+    func localizableFiles(for module: String) -> [LocalizableFile] {
         let paths = filterPaths(for: [module], from: localizableFilesPaths())
         var files: [LocalizableFile] = []
         paths.forEach { path in
@@ -143,20 +149,20 @@ private extension TranslationsVerificator {
 
 // MARK: Models
 
-enum Module: String {
-    case mimiSDK = "MimiSDK"
-    case mimiAuthKit = "MimiAuthKit"
-    case mimiTestKit = "MimiTestKit"
-    case examples = "Examples"
-
-    static var allSupportedForLocalization: [Module] {
-        [
-            .mimiSDK,
-            .mimiAuthKit,
-            .mimiTestKit
-        ]
-    }
-}
+//enum Module: String {
+//    case mimiSDK = "MimiSDK"
+//    case mimiAuthKit = "MimiAuthKit"
+//    case mimiTestKit = "MimiTestKit"
+//    case examples = "Examples"
+//
+//    static var allSupportedForLocalization: [Module] {
+//        [
+//            .mimiSDK,
+//            .mimiAuthKit,
+//            .mimiTestKit
+//        ]
+//    }
+//}
 
 struct LocalizableElement {
     let key: String
