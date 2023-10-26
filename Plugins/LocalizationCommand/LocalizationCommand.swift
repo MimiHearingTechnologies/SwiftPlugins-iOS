@@ -10,7 +10,13 @@ import PackagePlugin
 
 struct LocalizationCommand: CommandPlugin {
     func performCommand(context: PluginContext, arguments externalArgs: [String]) async throws {
-        Diagnostics.warning("Command only supported as Xcode command plugin")
+        let exec = try context.tool(named: "LocalizationExecutable")
+
+        do {
+            try exec.run(arguments: externalArgs, environment: nil)
+        } catch let error {
+            print(error)
+        }
     }
 }
 
@@ -22,9 +28,10 @@ import XcodeProjectPlugin
 extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "LocalizationExecutable")
+        print(externalArgs)
 
         do {
-            try exec.run(arguments: externalArgs, context: context, environment: nil)
+            try exec.run(arguments: externalArgs, environment: nil)
         } catch let error {
             print(error)
         }
@@ -34,11 +41,11 @@ extension LocalizationCommand: XcodeCommandPlugin {
 #endif
 
 private extension PluginContext.Tool {
-    func run(arguments: [String], context: XcodePluginContext, environment: [String: String]?) throws {
+    func run(arguments: [String], environment: [String: String]?) throws {
         let pipe = Pipe()
         let process = Process()
         process.executableURL = URL(fileURLWithPath: path.string)
-        process.arguments = []
+        process.arguments = arguments
         process.environment = environment
         process.standardError = pipe
 

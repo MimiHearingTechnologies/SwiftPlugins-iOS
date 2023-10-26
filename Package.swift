@@ -5,13 +5,24 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftPlugins",
+    platforms: [
+        .macOS(.v11),
+        .iOS(.v14),
+    ],
     products: [
         .executable(name: "LocalizationExecutable", targets: ["LocalizationExecutable"]),
         .plugin(name: "LocalizationCommand", targets: ["LocalizationCommand"]),
     ],
+    dependencies: [
+            // other dependencies
+            .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0"),
+    ],
     targets: [
         .executableTarget(
-            name: "LocalizationExecutable"
+            name: "LocalizationExecutable",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
         ),
         .plugin(
             name: "LocalizationCommand",

@@ -1,22 +1,38 @@
 import Foundation
+import OSLog
+import ArgumentParser
 
 @main
-class LocalizationExecutable {
+struct LocalizationExecutable: ParsableCommand {
 
-  static func main() {
+    @Option(help: "Target module")
+    var target: String?
 
-      print("Starting to pull files from Phrase...")
-      Executor.executeShell(.pullPhrase)
+    @Option(help: "Path to the Phrase config")
+    var phraseConfig: String
 
-      print("Starting to verify translations")
-      Executor.verifyTranslations()
+    @Option(help: "Path to the SwiftGen config")
+    var swiftgenConfig: String
 
-      print("Starting to generate type safe Localization.swift")
-      Executor.executeShell(.generateLocalization)
-  }
+    mutating func run() throws {
+
+        let executor = Executor(phraseConfig: phraseConfig, swiftgenConfig: swiftgenConfig)
+
+        print("Starting to pull files from Phrase...")
+        executor.executeShell(.pullPhrase)
+
+        print("Starting to verify translations")
+        Executor.verifyTranslations()
+
+        print("Starting to generate Localization.swift")
+        executor.executeShell(.generateLocalization)
+    }
 }
 
 class Executor {
+
+    var phraseConfig: String
+    var swiftgenConfig: String
 
     // the path where homebrew is installed by default
     static let defaultHomebrewPath = "/opt/homebrew/bin/"
@@ -44,6 +60,11 @@ class Executor {
         }
     }
 
+    init(phraseConfig: String, swiftgenConfig: String) {
+        self.phraseConfig = phraseConfig
+        self.swiftgenConfig = swiftgenConfig
+    }
+
     class func verifyTranslations() {
         let verificator = TranslationsVerificator()
 
@@ -51,7 +72,7 @@ class Executor {
         verificator.verifyTranslations(shouldGenerateReportFile: shouldGenerateReportFile)
     }
 
-    class func executeShell(_ command: Command) {
+    func executeShell(_ command: Command) {
         print(Self.shell(command))
     }
 
@@ -68,7 +89,7 @@ class Executor {
         let configPath = "\(process.currentDirectoryPath)/../\(command.configPath)"
         process.arguments = ["-c", "\(command.cmd) --config \(configPath)"]
 
-        process.launchPath = "/bin/zsh"
+        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process.standardInput = nil
 
         var environment = ProcessInfo.processInfo.environment
@@ -86,7 +107,8 @@ class Executor {
         let output = String(data: data, encoding: .utf8)!
 
         return output
-#endif
+#else
         return "Not supported. Executable only on macOS."
+#endif
     }
 }
