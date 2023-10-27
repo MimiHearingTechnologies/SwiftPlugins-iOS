@@ -3,17 +3,6 @@ import OSLog
 import ArgumentParser
 import Execution
 
-enum VerificationError: LocalizedError {
-    case noModulesProvided
-
-    var errorDescription: String {
-        switch self {
-        case .noModulesProvided:
-            return "❌ No modules provided, verifying translations failed."
-        }
-    }
-}
-
 @main
 struct LocalizationExecutable: ParsableCommand {
 
@@ -29,13 +18,13 @@ struct LocalizationExecutable: ParsableCommand {
     var swiftgenConfig: String = "../SwiftGen/swiftgen-localization.yml"
 
     // Modules used for verifying translations
-    @Argument(parsing: .remaining) public var modules: [String] = []
+    @Argument(parsing: .remaining) public var modules: [String] = ["MimiSDK", "MimiAuthKit", "MimiTestKit"]
 
     mutating func run() throws {
         let executor = ShellExecutor()
 
         do {
-            print("Starting to pull files from Phrase...")
+            separatorPrint(text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
             print(try executor.execute(phraseCommand.cmd))
         } catch let error as ExecutionError {
@@ -43,21 +32,28 @@ struct LocalizationExecutable: ParsableCommand {
         }
 
         do {
-            print("Starting to verify translations...")
+            separatorPrint(text: "Starting to verify translations.")
             try Self.verifyTranslations(modules: modules)
         } catch let error as VerificationError {
             print(error.errorDescription)
         }
 
         do {
-            print("Starting to generate Localization.swift")
+            separatorPrint(text: "Starting to generate Localization.swift")
             let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
             print(try executor.execute(localizationCommand.cmd))
         } catch let error as ExecutionError {
             print(error.errorDescription)
         }
+    }
 
-
+    private func separatorPrint(text: String) {
+        print(
+            """
+            -------------------------------------
+            \(text)
+            """
+        )
     }
 }
 
@@ -71,8 +67,7 @@ extension LocalizationExecutable {
         }
         let verificator = TranslationsVerificator(with: modules)
 
-        let shouldGenerateReportFile = CommandLine.arguments.contains(generateReportFileArgumentName)
-        verificator.verifyTranslations(shouldGenerateReportFile: shouldGenerateReportFile)
+        verificator.verifyTranslations()
     }
 }
 
@@ -98,6 +93,5 @@ extension LocalizationExecutable {
             return config.isEmpty ? "" : " --config \(config)"
         }
     }
-
 
 }

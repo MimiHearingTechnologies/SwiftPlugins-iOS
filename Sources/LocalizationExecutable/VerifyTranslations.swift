@@ -5,7 +5,16 @@
 
 import Foundation
 
-let generateReportFileArgumentName = "generateReportFile"
+enum VerificationError: LocalizedError {
+    case noModulesProvided
+
+    var errorDescription: String {
+        switch self {
+        case .noModulesProvided:
+            return "❌ No modules provided, verifying translations failed."
+        }
+    }
+}
 
 // MARK: Log
 
