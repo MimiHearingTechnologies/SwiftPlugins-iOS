@@ -26,7 +26,8 @@ struct LocalizationExecutable: ParsableCommand {
         do {
             separatorPrint(text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
-            print(try executor.execute(phraseCommand.cmd))
+            let shellCommand = ShellCommand(commandPath: phraseCommand.cmd, arguments: phraseCommand.args)
+            print(try executor.execute(shellCommand))
         } catch let error as ExecutionError {
             print(error.errorDescription)
         }
@@ -41,7 +42,8 @@ struct LocalizationExecutable: ParsableCommand {
         do {
             separatorPrint(text: "Starting to generate Localization.swift")
             let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
-            print(try executor.execute(localizationCommand.cmd))
+            let shellCommand = ShellCommand(commandPath: localizationCommand.cmd, arguments: localizationCommand.args)
+            print(try executor.execute(shellCommand))
         } catch let error as ExecutionError {
             print(error.errorDescription)
         }
@@ -82,14 +84,23 @@ extension LocalizationExecutable {
 
         var cmd: String {
             switch self {
-            case let .pullPhrase(config):
-                return "\(Self.brewPath)phrase pull" + configArg(for: config)
-            case let .generateLocalization(config):
-                return "\(Self.brewPath)swiftgen config run --verbose" + configArg(for: config)
+            case .pullPhrase:
+                return "\(Self.brewPath)phrase"
+            case .generateLocalization:
+                return "\(Self.brewPath)swiftgen"
             }
         }
 
-        func configArg(for config: String) -> String {
+        var args: String {
+            switch self {
+            case let .pullPhrase(config):
+                return "pull" + configArg(for: config)
+            case let .generateLocalization(config):
+                return "config run --verbose" + configArg(for: config)
+            }
+        }
+
+        private func configArg(for config: String) -> String {
             return config.isEmpty ? "" : " --config \(config)"
         }
     }
