@@ -94,7 +94,7 @@ extension LocalizationExecutable {
         var args: String {
             switch self {
             case let .pullPhrase(config):
-                return " pull" + configArg(for: config)
+                return "pull" + configArg(for: config)
             case let .generateLocalization(config):
                 return "config run --verbose" + configArg(for: config)
             }
