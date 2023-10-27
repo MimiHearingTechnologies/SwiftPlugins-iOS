@@ -50,7 +50,7 @@ private extension PluginContext.Tool {
         try process.run()
         process.waitUntilExit()
 
-        if process.terminationReason == .exit && process.terminationStatus == 0 {
+        guard process.terminationStatus != 0 || process.terminationReason != .exit else {
             return
         }
 
