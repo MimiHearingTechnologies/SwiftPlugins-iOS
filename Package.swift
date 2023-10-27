@@ -27,6 +27,7 @@ let package = Package(
         ),
         .target(name: "Execution"),
         .testTarget(name: "LocalizationExecutableTests", dependencies: ["LocalizationExecutable"]),
+        .testTarget(name: "ExecutionTests", dependencies: ["Execution"]),
         .plugin(
             name: "LocalizationCommand",
             capability: .command(

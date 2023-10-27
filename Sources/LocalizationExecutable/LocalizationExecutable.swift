@@ -26,7 +26,7 @@ struct LocalizationExecutable: ParsableCommand {
         do {
             separatorPrint(text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
-            let shellCommand = ShellCommand(commandPath: phraseCommand.cmd, arguments: phraseCommand.args)
+            let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             print(try executor.execute(shellCommand))
         } catch let error as ExecutionError {
             print(error.errorDescription)
@@ -42,7 +42,7 @@ struct LocalizationExecutable: ParsableCommand {
         do {
             separatorPrint(text: "Starting to generate Localization.swift")
             let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
-            let shellCommand = ShellCommand(commandPath: localizationCommand.cmd, arguments: localizationCommand.args)
+            let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
             print(try executor.execute(shellCommand))
         } catch let error as ExecutionError {
             print(error.errorDescription)
@@ -82,7 +82,7 @@ extension LocalizationExecutable {
 
         static let brewPath = "/opt/homebrew/bin/"
 
-        var cmd: String {
+        var cmdPath: String {
             switch self {
             case .pullPhrase:
                 return "\(Self.brewPath)phrase"

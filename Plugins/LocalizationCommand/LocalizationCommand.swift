@@ -28,7 +28,6 @@ extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "LocalizationExecutable")
 
-
         do {
             try exec.run(arguments: externalArgs, environment: nil)
         } catch let error {

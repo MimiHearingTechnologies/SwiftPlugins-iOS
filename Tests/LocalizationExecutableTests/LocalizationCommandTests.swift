@@ -15,25 +15,29 @@ final class LocalizationCommandTests: XCTestCase {
     func test_phraseCommandInitWithConfig() throws {
         let phraseCommand = LocalizationExecutable.LocalizationCommand.pullPhrase(config: "configPath")
 
-        XCTAssertEqual(phraseCommand.cmd, "/opt/homebrew/bin/phrase pull --config configPath")
+        XCTAssertEqual(phraseCommand.cmdPath, "/opt/homebrew/bin/phrase")
+        XCTAssertEqual(phraseCommand.args, "pull --config configPath")
     }
 
     func test_phraseCommandInitWithEmptyConfig() throws {
         let phraseCommand = LocalizationExecutable.LocalizationCommand.pullPhrase(config: "")
 
-        XCTAssertEqual(phraseCommand.cmd, "/opt/homebrew/bin/phrase pull")
+        XCTAssertEqual(phraseCommand.cmdPath, "/opt/homebrew/bin/phrase")
+        XCTAssertEqual(phraseCommand.args, "pull")
     }
 
     func test_localizationCommandInitWithConfig() throws {
         let localizationCommand = LocalizationExecutable.LocalizationCommand.generateLocalization(config: "configPath")
 
-        XCTAssertEqual(localizationCommand.cmd, "/opt/homebrew/bin/swiftgen config run --verbose --config configPath")
+        XCTAssertEqual(localizationCommand.cmdPath, "/opt/homebrew/bin/swiftgen")
+        XCTAssertEqual(localizationCommand.args, "config run --verbose --config configPath")
     }
 
     func test_localizationCommandInitWithEmptyConfig() throws {
         let localizationCommand = LocalizationExecutable.LocalizationCommand.generateLocalization(config: "")
 
-        XCTAssertEqual(localizationCommand.cmd, "/opt/homebrew/bin/swiftgen config run --verbose")
+        XCTAssertEqual(localizationCommand.cmdPath, "/opt/homebrew/bin/swiftgen")
+        XCTAssertEqual(localizationCommand.args, "config run --verbose")
     }
 
 }

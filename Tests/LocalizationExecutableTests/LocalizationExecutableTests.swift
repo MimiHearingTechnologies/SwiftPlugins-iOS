@@ -9,7 +9,6 @@ import XCTest
 @testable import LocalizationExecutable
 @testable import Execution
 
-#if os(macOS)
 final class LocalizationExecutableTests: XCTestCase {
 
     func test_verifyTranslationsEmptyModulesError() {
@@ -24,4 +23,3 @@ final class LocalizationExecutableTests: XCTestCase {
     }
 
 }
-#endif
