@@ -1,14 +1,17 @@
 import Foundation
 import OSLog
 import ArgumentParser
+import Execution
 
-protocol ExecutableCommand {
+enum VerificationError: LocalizedError {
+    case noModulesProvided
 
-    var type: Executor.Command { get set }
-
-    var configPath: String? { get set }
-
-    var command: String { get }
+    var errorDescription: String {
+        switch self {
+        case .noModulesProvided:
+            return "❌ No modules provided, verifying translations failed."
+        }
+    }
 }
 
 @main
@@ -20,89 +23,81 @@ struct LocalizationExecutable: ParsableCommand {
     var target: String?
 
     @Option(help: "Phrase config path")
-    var phraseConfig: String
+    var phraseConfig: String = "../.phrase.yml"
 
     @Option(help: "SwiftGen config path")
-    var swiftgenConfig: String
+    var swiftgenConfig: String = "../SwiftGen/swiftgen-localization.yml"
 
     // Modules used for verifying translations
-    @Argument(parsing: .captureForPassthrough) public var modules: [String]
+    @Argument(parsing: .remaining) public var modules: [String] = []
 
     mutating func run() throws {
+        let executor = ShellExecutor()
 
-        let executor = Executor()
-
-        print("Starting to pull files from Phrase...")
-        print(Executor.executeShell(.pullPhrase(config: phraseConfig)))
-
-        if !modules.isEmpty {
-            print("Starting to verify translations")
-            Executor.verifyTranslations(modules: modules)
+        do {
+            print("Starting to pull files from Phrase...")
+            let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
+            print(try executor.execute(phraseCommand.cmd))
+        } catch let error as ExecutionError {
+            print(error.errorDescription)
         }
 
-        print("Starting to generate Localization.swift")
-        print(Executor.executeShell(.generateLocalization(config: swiftgenConfig)))
+        do {
+            print("Starting to verify translations...")
+            try Self.verifyTranslations(modules: modules)
+        } catch let error as VerificationError {
+            print(error.errorDescription)
+        }
+
+        do {
+            print("Starting to generate Localization.swift")
+            let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
+            print(try executor.execute(localizationCommand.cmd))
+        } catch let error as ExecutionError {
+            print(error.errorDescription)
+        }
+
+
     }
 }
 
-// MARK: - Executor
+// MARK: - Verify translations
 
-class Executor {
+extension LocalizationExecutable {
 
-    // the path where homebrew is installed by default
-    static let defaultHomebrewPath = "/opt/homebrew/bin/"
-
-    enum Command {
-        case pullPhrase(config: String), generateLocalization(config: String)
-
-        var cmd: String {
-            switch self {
-            case let .pullPhrase(config):
-                return Executor.defaultHomebrewPath + "phrase pull --config \(config)"
-            case let .generateLocalization(config):
-                return Executor.defaultHomebrewPath + "swiftgen config run --verbose --config \(config)"
-            }
+    static func verifyTranslations(modules: [String]) throws {
+        guard !modules.isEmpty else {
+            throw VerificationError.noModulesProvided
         }
-    }
-
-    class func verifyTranslations(modules: [String]) {
         let verificator = TranslationsVerificator(with: modules)
 
         let shouldGenerateReportFile = CommandLine.arguments.contains(generateReportFileArgumentName)
         verificator.verifyTranslations(shouldGenerateReportFile: shouldGenerateReportFile)
     }
+}
 
-    class func executeShell(_ command: Command) -> String {
-        // This check is needed bacause Process is only available on macOS
-#if os(macOS)
-        let process = Process()
-        let pipe = Pipe()
+// MARK: - LocalizationCommand
 
-        process.standardOutput = pipe
-        process.standardError = pipe
+extension LocalizationExecutable {
 
-        process.arguments = ["-c", command.cmd]
+    enum LocalizationCommand {
+        case pullPhrase(config: String), generateLocalization(config: String)
 
-        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process.standardInput = nil
+        static let brewPath = "/opt/homebrew/bin/"
 
-        var environment = ProcessInfo.processInfo.environment
-        environment["PROJECT_DIR"] = process.currentDirectoryPath
-        process.environment = environment
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-        } catch {
-            print("Failed to run the process: \(error)")
+        var cmd: String {
+            switch self {
+            case let .pullPhrase(config):
+                return "\(Self.brewPath)phrase pull" + configArg(for: config)
+            case let .generateLocalization(config):
+                return "\(Self.brewPath)swiftgen config run --verbose" + configArg(for: config)
+            }
         }
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8)!
-
-        return output
-#else
-        return "Not supported. Executable only on macOS."
-#endif
+        func configArg(for config: String) -> String {
+            return config.isEmpty ? "" : " --config \(config)"
+        }
     }
+
+
 }

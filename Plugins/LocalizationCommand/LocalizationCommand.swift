@@ -15,7 +15,7 @@ struct LocalizationCommand: CommandPlugin {
         do {
             try exec.run(arguments: externalArgs, environment: nil)
         } catch let error {
-            print(error)
+            Diagnostics.remark(error.localizedDescription)
         }
     }
 }
@@ -27,12 +27,12 @@ import XcodeProjectPlugin
 extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "LocalizationExecutable")
-        print(externalArgs)
+
 
         do {
             try exec.run(arguments: externalArgs, environment: nil)
         } catch let error {
-            print(error)
+            Diagnostics.remark(error.localizedDescription)
         }
     }
 }

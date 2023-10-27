@@ -21,9 +21,12 @@ let package = Package(
         .executableTarget(
             name: "LocalizationExecutable",
             dependencies: [
+                .target(name: "Execution"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
+        .target(name: "Execution"),
+        .testTarget(name: "LocalizationExecutableTests", dependencies: ["LocalizationExecutable"]),
         .plugin(
             name: "LocalizationCommand",
             capability: .command(

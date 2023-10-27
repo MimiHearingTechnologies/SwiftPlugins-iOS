@@ -149,21 +149,6 @@ private extension TranslationsVerificator {
 
 // MARK: Models
 
-//enum Module: String {
-//    case mimiSDK = "MimiSDK"
-//    case mimiAuthKit = "MimiAuthKit"
-//    case mimiTestKit = "MimiTestKit"
-//    case examples = "Examples"
-//
-//    static var allSupportedForLocalization: [Module] {
-//        [
-//            .mimiSDK,
-//            .mimiAuthKit,
-//            .mimiTestKit
-//        ]
-//    }
-//}
-
 struct LocalizableElement {
     let key: String
     let value: String
