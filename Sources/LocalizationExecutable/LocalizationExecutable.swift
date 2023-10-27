@@ -18,7 +18,7 @@ struct LocalizationExecutable: ParsableCommand {
     var swiftgenConfig: String = "../SwiftGen/swiftgen-localization.yml"
 
     // Modules used for verifying translations
-    @Argument(parsing: .remaining) public var modules: [String] = ["MimiSDK", "MimiAuthKit", "MimiTestKit"]
+    @Argument(parsing: .remaining) public var modules: [String] = []
 
     mutating func run() throws {
         let executor = ShellExecutor()
@@ -67,8 +67,8 @@ extension LocalizationExecutable {
         guard !modules.isEmpty else {
             throw VerificationError.noModulesProvided
         }
-        let verificator = TranslationsVerificator(with: modules)
 
+        let verificator = TranslationsVerificator(with: modules)
         verificator.verifyTranslations()
     }
 }
