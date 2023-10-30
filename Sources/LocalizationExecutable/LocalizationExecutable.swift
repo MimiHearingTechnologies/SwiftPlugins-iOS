@@ -28,15 +28,16 @@ struct LocalizationExecutable: ParsableCommand {
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             print(try executor.execute(shellCommand))
-        } catch let error as ExecutionError {
-            print(error.errorDescription)
+        } catch {
+            print(error)
         }
 
         do {
             separatorPrint(text: "Starting to verify translations.")
-            try Self.verifyTranslations(modules: modules)
-        } catch let error as VerificationError {
-            print(error.errorDescription)
+            let verificator = try TranslationsVerificator(with: modules)
+            verificator.verifyTranslations()
+        } catch {
+            print(error)
         }
 
         do {
@@ -44,8 +45,8 @@ struct LocalizationExecutable: ParsableCommand {
             let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
             let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
             print(try executor.execute(shellCommand))
-        } catch let error as ExecutionError {
-            print(error.errorDescription)
+        } catch {
+            print(error)
         }
     }
 
@@ -56,20 +57,6 @@ struct LocalizationExecutable: ParsableCommand {
             \(text)
             """
         )
-    }
-}
-
-// MARK: - Verify translations
-
-extension LocalizationExecutable {
-
-    static func verifyTranslations(modules: [String]) throws {
-        guard !modules.isEmpty else {
-            throw VerificationError.noModulesProvided
-        }
-
-        let verificator = TranslationsVerificator(with: modules)
-        verificator.verifyTranslations()
     }
 }
 
