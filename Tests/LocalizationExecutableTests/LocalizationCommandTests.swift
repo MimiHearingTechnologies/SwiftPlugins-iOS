@@ -39,12 +39,4 @@ final class LocalizationCommandTests: XCTestCase {
         XCTAssertEqual(localizationCommand.cmdPath, "/opt/homebrew/bin/swiftgen")
         XCTAssertEqual(localizationCommand.args, "config run --verbose")
     }
-
-    func test() {
-        let sut = FileHelper()
-        sut.writeToFile(string: "a string", path: "TranslationsVerificationReport", encoding: .utf8)
-        let paths = sut.filePaths(in: ".", forFile: "TranslationsVerificationReport")
-        
-        print("paths : \(paths)")
-    }
 }

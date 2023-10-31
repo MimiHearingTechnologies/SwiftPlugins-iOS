@@ -1,5 +1,4 @@
 import Foundation
-import OSLog
 import ArgumentParser
 import Execution
 
@@ -22,41 +21,40 @@ struct LocalizationExecutable: ParsableCommand {
 
     mutating func run() throws {
         let executor = ShellExecutor()
+        let logger = Logger()
 
         do {
-            separatorPrint(text: "Starting to pull files from Phrase...")
+            separatorLog(logger,text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
-            print(try executor.execute(shellCommand))
+            logger.log(try executor.execute(shellCommand))
         } catch {
-            print(error)
+            logger.log(error.localizedDescription)
         }
 
         do {
-            separatorPrint(text: "Starting to verify translations.")
+            separatorLog(logger,text: "Starting to verify translations.")
             let verificator = try TranslationsVerificator(with: modules)
             verificator.verifyTranslations()
         } catch {
-            print(error)
+            logger.log(error.localizedDescription)
         }
 
         do {
-            separatorPrint(text: "Starting to generate Localization.swift")
+            separatorLog(logger,text: "Starting to generate Localization.swift")
             let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
             let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
-            print(try executor.execute(shellCommand))
+            logger.log(try executor.execute(shellCommand))
         } catch {
-            print(error)
+            logger.log(error.localizedDescription)
         }
     }
 
-    private func separatorPrint(text: String) {
-        print(
-            """
+    private func separatorLog(_ logger: Logger, text: String) {
+        logger.log("""
             -------------------------------------
             \(text)
-            """
-        )
+            """)
     }
 }
 

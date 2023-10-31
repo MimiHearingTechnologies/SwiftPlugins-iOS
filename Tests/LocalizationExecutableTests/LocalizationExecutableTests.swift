@@ -11,22 +11,11 @@ import XCTest
 
 final class LocalizationExecutableTests: XCTestCase {
 
-//    func test_verifyTranslationsEmptyModulesError() {
-//        do {
-//            try LocalizationExecutable.verifyTranslations(modules: [])
-//        } catch {
-//            XCTAssertEqual(error as! TranslationsVerificator.VerificationError, TranslationsVerificator.VerificationError.noModulesProvided)
-//            return
-//        }
-//
-//        XCTFail("Expected `VerificationError.noModulesProvided` error`")
-//    }
-
-    func test() {
+    func test_verifyTranslationsEmptyModulesError() {
         do {
             _ = try TranslationsVerificator(with: [])
+            XCTFail("Expected `VerificationError.noModulesProvided` error`")
         } catch {
-            print(error)
             XCTAssertEqual(error as! TranslationsVerificator.VerificationError, TranslationsVerificator.VerificationError.noModulesProvided)
         }
     }
