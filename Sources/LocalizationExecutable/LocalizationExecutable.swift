@@ -30,6 +30,7 @@ struct LocalizationExecutable: ParsableCommand {
             logger.log(try executor.execute(shellCommand))
         } catch {
             logger.log(error.localizedDescription)
+            throw error
         }
 
         do {
@@ -38,6 +39,7 @@ struct LocalizationExecutable: ParsableCommand {
             verificator.verifyTranslations()
         } catch {
             logger.log(error.localizedDescription)
+            throw error
         }
 
         do {
@@ -47,6 +49,7 @@ struct LocalizationExecutable: ParsableCommand {
             logger.log(try executor.execute(shellCommand))
         } catch {
             logger.log(error.localizedDescription)
+            throw error
         }
     }
 
