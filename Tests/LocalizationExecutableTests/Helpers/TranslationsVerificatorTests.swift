@@ -1,23 +1,22 @@
 //
-//  LocalizationExecutableTests.swift
+//  TranslationsVerificatorTests.swift
 //  
 //
-//  Created by Kosta Nedeljkovic on 27/10/2023.
+//  Created by Salar on 10/30/23.
 //
 
 import XCTest
 @testable import LocalizationExecutable
-@testable import Execution
 
-final class LocalizationExecutableTests: XCTestCase {
+final class TranslationsVerificatorTests: XCTestCase {
 
-    func test_verifyTranslationsEmptyModulesError() {
+    func test_init_throwsErrorOnEmptyModules() {
         do {
             _ = try TranslationsVerificator(with: [])
-            XCTFail("Expected `VerificationError.noModulesProvided` error`")
+            XCTFail("Expected an error, but we succeeded instead.")
         } catch {
             XCTAssertEqual(error as! TranslationsVerificator.VerificationError, TranslationsVerificator.VerificationError.noModulesProvided)
         }
     }
-    
+
 }

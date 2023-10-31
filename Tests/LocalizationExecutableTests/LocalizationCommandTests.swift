@@ -39,5 +39,4 @@ final class LocalizationCommandTests: XCTestCase {
         XCTAssertEqual(localizationCommand.cmdPath, "/opt/homebrew/bin/swiftgen")
         XCTAssertEqual(localizationCommand.args, "config run --verbose")
     }
-
 }

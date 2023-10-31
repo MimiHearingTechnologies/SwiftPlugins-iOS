@@ -11,31 +11,26 @@ import XCTest
 #if os(macOS)
 final class ShellExecutorTests: XCTestCase {
 
-    func test_executeNonexistentExecutable() {
-        let executor = ShellExecutor(executablePath: "/nonexistent")
+    func test_execute_throwsErrorWithInvalidExecutablePath() {
+        let executor = ShellExecutor(executablePath: "/invalidPath")
 
         do {
             try executor.execute(ShellCommand(commandPath: "random", arguments: ""))
+            XCTFail("Expected `Execution.executableNotFound` error")
         } catch {
             XCTAssertEqual(error as! ExecutionError, ExecutionError.executableNotFound)
-            return
         }
-
-        XCTFail("Expected `Execution.executableNotFound` error")
     }
 
-    func test_executeNonexistentCommand() {
+    func test_execute_throwsErrorWithInvalidCommandPath() {
         let executor = ShellExecutor(executablePath: "/bin/zsh")
 
         do {
             try executor.execute(ShellCommand(commandPath: "nonexistent", arguments: ""))
+            XCTFail("Expected `Execution.commandNotFound` error")
         } catch {
             XCTAssertEqual(error as! ExecutionError, ExecutionError.commandNotFound)
-            return
         }
-
-        XCTFail("Expected `Execution.commandNotFound` error")
     }
-
 }
 #endif

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ShellExecutor.swift
 //
 //
 //  Created by Kosta Nedeljkovic on 27/10/2023.
@@ -8,12 +8,12 @@
 import Foundation
 import OSLog
 
-public enum ExecutionError: LocalizedError, Equatable {
+public enum ExecutionError: Error, CustomStringConvertible, Equatable {
     case executableNotFound
     case commandNotFound
     case runFailed(description: String)
 
-    public var errorDescription: String {
+    public var description: String {
         switch self {
         case .executableNotFound:
             return "Executable not found."
@@ -22,20 +22,6 @@ public enum ExecutionError: LocalizedError, Equatable {
         case let .runFailed(description):
             return "Run failed: \(description)"
         }
-    }
-}
-
-public struct ShellCommand {
-    var commandPath: String
-    var arguments: String
-
-    var fullPath: String {
-        return "\(commandPath) \(arguments)"
-    }
-
-    public init(commandPath: String, arguments: String) {
-        self.commandPath = commandPath
-        self.arguments = arguments
     }
 }
 
