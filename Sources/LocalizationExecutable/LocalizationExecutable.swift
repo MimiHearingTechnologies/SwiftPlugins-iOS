@@ -11,10 +11,10 @@ struct LocalizationExecutable: ParsableCommand {
     var target: String?
 
     @Option(help: "Phrase config path")
-    var phraseConfig: String = "../.phrase.yml"
+    var phraseConfig: String = "./.phrase.yml"
 
     @Option(help: "SwiftGen config path")
-    var swiftgenConfig: String = "../SwiftGen/swiftgen-localization.yml"
+    var swiftgenConfig: String = "./SwiftGen/swiftgen-localization.yml"
 
     // Modules used for verifying translations
     @Argument(parsing: .remaining) public var modules: [String] = []
