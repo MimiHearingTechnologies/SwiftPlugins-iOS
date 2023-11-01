@@ -10,17 +10,20 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
+    @Option(help: "Root path of the process")
+    var rootPath: String
+
     @Option(help: "Phrase config path")
-    var phraseConfig: String = "../.phrase.yml"
+    var phraseConfig: String = "./.phrase.yml"
 
     @Option(help: "SwiftGen config path")
-    var swiftgenConfig: String = "../SwiftGen/swiftgen-localization.yml"
+    var swiftgenConfig: String = "./SwiftGen/swiftgen-localization.yml"
 
     // Modules used for verifying translations
     @Argument(parsing: .remaining) public var modules: [String] = []
 
     mutating func run() throws {
-        let executor = ShellExecutor()
+        let executor = ShellExecutor(rootPath: rootPath)
         let logger = Logger()
 
         do {

@@ -12,7 +12,7 @@ import XCTest
 final class ShellExecutorTests: XCTestCase {
 
     func test_execute_throwsErrorWithInvalidExecutablePath() {
-        let executor = ShellExecutor(executablePath: "/invalidPath")
+        let executor = ShellExecutor(rootPath: "/root/", executablePath: "/invalidPath")
 
         do {
             try executor.execute(ShellCommand(commandPath: "random", arguments: ""))
@@ -23,7 +23,7 @@ final class ShellExecutorTests: XCTestCase {
     }
 
     func test_execute_throwsErrorWithInvalidCommandPath() {
-        let executor = ShellExecutor(executablePath: "/bin/zsh")
+        let executor = ShellExecutor(rootPath: "/root/", executablePath: "/bin/zsh")
 
         do {
             try executor.execute(ShellCommand(commandPath: "nonexistent", arguments: ""))

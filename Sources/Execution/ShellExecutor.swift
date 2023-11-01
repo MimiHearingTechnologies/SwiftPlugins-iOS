@@ -30,10 +30,12 @@ public class ShellExecutor {
     private let fileManager = FileManager.default
 
     var executablePath: String
+    var rootPath: String
 
     // MARK: - Initializers
 
-    public init(executablePath: String? = nil) {
+    public init(rootPath: String, executablePath: String? = nil) {
+        self.rootPath = rootPath
         self.executablePath = executablePath ?? "/bin/zsh"
     }
 
@@ -50,6 +52,8 @@ public class ShellExecutor {
         }
 
         let process = Process()
+        process.currentDirectoryURL = URL(filePath: rootPath)
+
         let pipe = Pipe()
 
         process.standardOutput = pipe
@@ -61,7 +65,7 @@ public class ShellExecutor {
         process.standardInput = nil
 
         var environment = ProcessInfo.processInfo.environment
-        environment["PROJECT_DIR"] = process.currentDirectoryPath
+        environment["PROJECT_DIR"] = rootPath
         process.environment = environment
 
         do {
