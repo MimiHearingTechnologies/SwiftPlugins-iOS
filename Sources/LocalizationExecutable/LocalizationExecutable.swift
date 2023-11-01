@@ -10,7 +10,7 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
-    @Option(help: "Root path of the process")
+    @Option(help: "Root path of the executable")
     var rootPath: String
 
     @Option(help: "Phrase config path")
