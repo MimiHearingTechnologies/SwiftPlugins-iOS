@@ -23,12 +23,12 @@ Following flags & arguments need to be provided:
 
 The following are optional, since the executable checks for them in the root of the target by default:
 
-- SwiftGen config file path: `--swiftgen-config customPath/SwiftGen/swiftgen-localization.yml`
-- Phrase config file path: `--phrase-config customPath/.phrase.yml`
+- SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`
+- Phrase config file path: `--phrase-config custom/path/.phrase.yml`
 
 To run the command right click the target and select `LocalizationCommand` in Xcode.
 
 Example of a full command: 
 
-`--swiftgen-config path/SwiftGen/swiftgen-localization.yml --phrase-config path/.phrase.yml ModuleA ModuleB ModuleC`
+`--swiftgen-config custom/path/swiftgen.yml --phrase-config custom/path/.phrase.yml ModuleA ModuleB ModuleC`
 
