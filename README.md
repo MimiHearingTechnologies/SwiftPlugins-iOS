@@ -12,15 +12,23 @@ A command plugin which is run manually and performs the following operations on 
 2. Generates `Localization.swift` containing type safe translations
 3. Verifies the translations
 
-The command is run by right clicking the target and selecting `LocalizationCommand` in XCode.
+Prerequisites:
+
+- Phrase CLI needs to be installed, via Homebrew
+- SwiftGen tool needs to be installed, via Homebrew
 
 Following flags & arguments need to be provided:
 
-- SwiftGen config file path: `--swiftgen-config ../SwiftGen/swiftgen-localization.yml`
-- Phrase config file path: `--phrase-config ../.phrase.yml`
 - List of modules for verifying translations, provided at the end: `ModuleA ModuleB moduleC`
+
+The following are optional, since the executable checks for them in the root of the target by default:
+
+- SwiftGen config file path: `--swiftgen-config customPath/SwiftGen/swiftgen-localization.yml`
+- Phrase config file path: `--phrase-config customPath/.phrase.yml`
+
+To run the command right click the target and select `LocalizationCommand` in Xcode.
 
 Example of a full command: 
 
-`--swiftgen-config ../SwiftGen/swiftgen-localization.yml --phrase-config ../.phrase.yml MimiSDK MimiTestKit MimiAuthKit`
+`--swiftgen-config path/SwiftGen/swiftgen-localization.yml --phrase-config path/.phrase.yml ModuleA ModuleB ModuleC`
 
