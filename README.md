@@ -14,8 +14,8 @@ A command plugin which is run manually and performs the following operations on 
 
 Prerequisites:
 
-- Phrase CLI needs to be installed, via Homebrew
-- SwiftGen tool needs to be installed, via Homebrew
+- Install [Phrase CLI](https://support.phrase.com/hc/en-us/articles/5784093863964-CLI-Installation-Strings-) using Homebrew
+- Install [ SwiftGen](https://github.com/SwiftGen/SwiftGen#installation) using Homebrew
 
 Following flags & arguments need to be provided:
 
