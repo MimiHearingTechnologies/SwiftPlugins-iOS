@@ -13,6 +13,9 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "If set to true, only verify translations step is completed")
     var verifyOnly: Bool = false
 
+    @Option(help: "If set to true, only verify translations step is completed")
+    var sourceDir: String = "."
+
     @Option(help: "Phrase config path")
     var phraseConfig: String = "./.phrase.yml"
 
@@ -46,17 +49,18 @@ struct LocalizationExecutable: ParsableCommand {
         }
 
         do {
-            try verifyTranslations(logger: logger)
+            separatorLog(logger,text: "Starting to generate Localization.swift")
+            let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
+            let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
+            logger.log(try executor.execute(shellCommand))
         } catch {
+            logger.log(error.localizedDescription)
             throw error
         }
 
         do {
-            separatorLog(logger, text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules)
-            verificator.verifyTranslations()
+            try verifyTranslations(logger: logger)
         } catch {
-            logger.log(error.localizedDescription)
             throw error
         }
     }
@@ -71,7 +75,7 @@ struct LocalizationExecutable: ParsableCommand {
     private func verifyTranslations(logger: Logger) throws {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules)
+            let verificator = try TranslationsVerificator(with: modules, sourceDir: sourceDir)
             verificator.verifyTranslations()
         } catch {
             logger.log(error.localizedDescription)
