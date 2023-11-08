@@ -10,6 +10,9 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
+    @Option(help: "If set to true, only verify translations step is completed")
+    var verifyOnly: Bool = false
+
     @Option(help: "Phrase config path")
     var phraseConfig: String = "./.phrase.yml"
 
@@ -23,8 +26,17 @@ struct LocalizationExecutable: ParsableCommand {
         let executor = ShellExecutor()
         let logger = Logger()
 
+        guard !verifyOnly else {
+            do {
+                try verifyTranslations(logger: logger)
+            } catch {
+                throw error
+            }
+            return
+        }
+
         do {
-            separatorLog(logger,text: "Starting to pull files from Phrase...")
+            separatorLog(logger, text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             logger.log(try executor.execute(shellCommand))
@@ -34,17 +46,13 @@ struct LocalizationExecutable: ParsableCommand {
         }
 
         do {
-            separatorLog(logger,text: "Starting to generate Localization.swift")
-            let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
-            let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
-            logger.log(try executor.execute(shellCommand))
+            try verifyTranslations(logger: logger)
         } catch {
-            logger.log(error.localizedDescription)
             throw error
         }
 
         do {
-            separatorLog(logger,text: "Starting to verify translations.")
+            separatorLog(logger, text: "Starting to verify translations.")
             let verificator = try TranslationsVerificator(with: modules)
             verificator.verifyTranslations()
         } catch {
@@ -58,6 +66,17 @@ struct LocalizationExecutable: ParsableCommand {
             -------------------------------------
             \(text)
             """)
+    }
+
+    private func verifyTranslations(logger: Logger) throws {
+        do {
+            separatorLog(logger, text: "Starting to verify translations.")
+            let verificator = try TranslationsVerificator(with: modules)
+            verificator.verifyTranslations()
+        } catch {
+            logger.log(error.localizedDescription)
+            throw error
+        }
     }
 }
 
