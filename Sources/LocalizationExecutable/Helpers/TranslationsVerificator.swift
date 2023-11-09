@@ -17,7 +17,7 @@ class TranslationsVerificator {
     
     private let modules: [String]
     
-    enum VerificationError: Error, CustomStringConvertible {
+    enum VerificationError: Error, CustomStringConvertible, Equatable {
         case noModulesProvided
         case sourceDirNotFound(path: String)
 
@@ -26,7 +26,7 @@ class TranslationsVerificator {
             case .noModulesProvided:
                 return "❌ No modules provided, verifying translations failed."
             case let .sourceDirNotFound(path):
-                return "Provided source directory not found: \(path)"
+                return "❌ Provided source directory not found: \(path)"
             }
         }
     }
@@ -35,7 +35,10 @@ class TranslationsVerificator {
         guard !modules.isEmpty else {
             throw TranslationsVerificator.VerificationError.noModulesProvided
         }
-        
+        guard FileManager.default.fileExists(atPath: sourceDir) else {
+            throw TranslationsVerificator.VerificationError.sourceDirNotFound(path: sourceDir)
+        }
+
         self.modules = modules
         self.sourceDir = sourceDir
     }
