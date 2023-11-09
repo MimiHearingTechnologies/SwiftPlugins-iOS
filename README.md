@@ -23,6 +23,7 @@ Following flags & arguments need to be provided:
 
 The following flags are optional:
 
+- Verify only (only runs verify translations step): `--verify-only true`, default value set to false
 - Generate report (generates a report for verify translations step if set to true): `--generate-report true`
 - SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`, defaults to target root directory
 - Phrase config file path: `--phrase-config custom/path/.phrase.yml`, defaults to target root directory
@@ -32,5 +33,5 @@ To run the command right click the target and select `LocalizationCommand` in Xc
 
 Example of a full command: 
 
-`--swiftgen-config custom/path/swiftgen.yml --phrase-config custom/path/.phrase.yml ModuleA ModuleB ModuleC`
+`--verify-only true --verification-source custom/source --generate-report true --swiftgen-config custom/path/swiftgen.yml --phrase-config custom/path/.phrase.yml ModuleA ModuleB ModuleC`
 
