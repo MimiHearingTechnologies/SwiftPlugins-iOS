@@ -21,9 +21,9 @@ Following flags & arguments need to be provided:
 
 - List of modules for verifying translations, provided at the end: `ModuleA ModuleB moduleC`
 
-The following are optional:
+The following flags are optional:
 
-- Generate report flag which generates a report for verify translations step if set to true: `--generate-report true`
+- Generate report (generates a report for verify translations step if set to true): `--generate-report true`
 - SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`, defaults to target root directory
 - Phrase config file path: `--phrase-config custom/path/.phrase.yml`, defaults to target root directory
 - Verification source: `--verification-source custom/source`, defaults to target root directory
