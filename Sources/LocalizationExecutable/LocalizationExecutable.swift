@@ -13,8 +13,11 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "If set to true, only verify translations step is completed")
     var verifyOnly: Bool = false
 
-    @Option(help: "If set to true, only verify translations step is completed")
-    var sourceDir: String = "."
+    @Option(help: "If set to true, verify translations step generates `TranslationsVerificationReport`")
+    var generateReport: Bool = false
+
+    @Option(help: "Source directory for verification step")
+    var verificationSource: String = "."
 
     @Option(help: "Phrase config path")
     var phraseConfig: String = "./.phrase.yml"
@@ -75,8 +78,8 @@ struct LocalizationExecutable: ParsableCommand {
     private func verifyTranslations(logger: Logger) throws {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules, sourceDir: sourceDir)
-            verificator.verifyTranslations()
+            let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
+            verificator.verifyTranslations(shouldGenerateReportFile: generateReport)
         } catch {
             logger.log(error.localizedDescription)
             throw error

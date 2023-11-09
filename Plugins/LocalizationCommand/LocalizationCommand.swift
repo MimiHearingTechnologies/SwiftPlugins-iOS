@@ -24,7 +24,6 @@ struct LocalizationCommand: CommandPlugin {
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
 
-//@main
 extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "LocalizationExecutable")

@@ -19,19 +19,23 @@ class TranslationsVerificator {
     
     enum VerificationError: Error, CustomStringConvertible {
         case noModulesProvided
+        case sourceDirNotFound(path: String)
 
         var description: String {
             switch self {
             case .noModulesProvided:
                 return "❌ No modules provided, verifying translations failed."
+            case let .sourceDirNotFound(path):
+                return "Provided source directory not found: \(path)"
             }
         }
     }
 
-    init(with modules: [String], sourceDir: String) throws {
+    init(with modules: [String], sourceDir: String = ".") throws {
         guard !modules.isEmpty else {
             throw TranslationsVerificator.VerificationError.noModulesProvided
         }
+        
         self.modules = modules
         self.sourceDir = sourceDir
     }
