@@ -23,8 +23,8 @@ Following flags & arguments need to be provided:
 
 The following flags are optional:
 
-- Verify only (only runs verify translations step): `--verify-only true`, default value set to false
-- Generate report (generates a report for verify translations step if set to true): `--generate-report true`
+- Verify only (only runs verify translations step): `--verify-only true`, default value is `false`
+- Generate report (generates a report for verify translations step if set to true): `--generate-report true`, default value is `false`
 - SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`, defaults to target root directory
 - Phrase config file path: `--phrase-config custom/path/.phrase.yml`, defaults to target root directory
 - Verification source: `--verification-source custom/source`, defaults to target root directory
