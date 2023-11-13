@@ -33,11 +33,7 @@ struct LocalizationExecutable: ParsableCommand {
         let logger = Logger()
 
         guard !verifyOnly else {
-            do {
-                try verifyTranslations(logger: logger)
-            } catch {
-                throw error
-            }
+            verifyTranslations(logger: logger)
             return
         }
 
@@ -61,11 +57,7 @@ struct LocalizationExecutable: ParsableCommand {
             throw error
         }
 
-        do {
-            try verifyTranslations(logger: logger)
-        } catch {
-            throw error
-        }
+        verifyTranslations(logger: logger)
     }
 
     private func separatorLog(_ logger: Logger, text: String) {
@@ -75,14 +67,13 @@ struct LocalizationExecutable: ParsableCommand {
             """)
     }
 
-    private func verifyTranslations(logger: Logger) throws {
+    private func verifyTranslations(logger: Logger) {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
             let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
             verificator.verifyTranslations(shouldGenerateReportFile: generateReport)
         } catch {
             logger.log(error.localizedDescription)
-            throw error
         }
     }
 }
