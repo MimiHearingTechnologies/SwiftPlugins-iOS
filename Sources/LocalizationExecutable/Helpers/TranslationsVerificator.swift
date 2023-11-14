@@ -8,7 +8,7 @@ import Foundation
 class TranslationsVerificator {
 
     private let localizableFileName = "Localizable.strings"
-    private let sourcesDirectory = "."
+    private let sourceDir: String
     private let referenceLanguageCode = "en"
     private let reportFilePath = "TranslationsVerificationReport"
     private let fileHelper = FileHelper()
@@ -17,22 +17,30 @@ class TranslationsVerificator {
     
     private let modules: [String]
     
-    enum VerificationError: Error, CustomStringConvertible {
+    enum VerificationError: Error, CustomStringConvertible, Equatable {
         case noModulesProvided
+        case sourceDirNotFound(path: String)
 
         var description: String {
             switch self {
             case .noModulesProvided:
                 return "❌ No modules provided, verifying translations failed."
+            case let .sourceDirNotFound(path):
+                return "❌ Provided source directory not found: \(path)"
             }
         }
     }
 
-    init(with modules: [String]) throws {
+    init(with modules: [String], sourceDir: String = ".") throws {
         guard !modules.isEmpty else {
             throw TranslationsVerificator.VerificationError.noModulesProvided
         }
+        guard FileManager.default.fileExists(atPath: sourceDir) else {
+            throw TranslationsVerificator.VerificationError.sourceDirNotFound(path: sourceDir)
+        }
+
         self.modules = modules
+        self.sourceDir = sourceDir
     }
 
     func verifyTranslations(shouldGenerateReportFile: Bool = false) {
@@ -62,7 +70,7 @@ class TranslationsVerificator {
 private extension TranslationsVerificator {
 
     func localizableFilesPaths() -> [FileHelper.FileURL] {
-        fileHelper.filePaths(in: sourcesDirectory, forFile: localizableFileName)
+        fileHelper.filePaths(in: sourceDir, forFile: localizableFileName)
     }
 
     func filterPaths(for modules: [String], from paths: [FileHelper.FileURL]) -> [FileHelper.FileURL] {

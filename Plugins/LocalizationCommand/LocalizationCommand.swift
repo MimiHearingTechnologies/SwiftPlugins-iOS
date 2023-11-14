@@ -8,6 +8,7 @@
 import Foundation
 import PackagePlugin
 
+@main
 struct LocalizationCommand: CommandPlugin {
     func performCommand(context: PluginContext, arguments externalArgs: [String]) async throws {
         let exec = try context.tool(named: "LocalizationExecutable")
@@ -23,7 +24,6 @@ struct LocalizationCommand: CommandPlugin {
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
 
-@main
 extension LocalizationCommand: XcodeCommandPlugin {
     func performCommand(context: XcodePluginContext, arguments externalArgs: [String]) throws {
         let exec = try context.tool(named: "LocalizationExecutable")

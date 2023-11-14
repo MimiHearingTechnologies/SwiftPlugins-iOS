@@ -21,14 +21,17 @@ Following flags & arguments need to be provided:
 
 - List of modules for verifying translations, provided at the end: `ModuleA ModuleB moduleC`
 
-The following are optional, since the executable checks for them in the root of the target by default:
+The following flags are optional:
 
-- SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`
-- Phrase config file path: `--phrase-config custom/path/.phrase.yml`
+- Verify only (only runs verify translations step): `--verify-only true`, default value is `false`
+- Generate report (generates a report for verify translations step if set to true): `--generate-report true`, default value is `false`
+- SwiftGen config file path: `--swiftgen-config custom/path/swiftgen.yml`, defaults to target root directory
+- Phrase config file path: `--phrase-config custom/path/.phrase.yml`, defaults to target root directory
+- Verification source: `--verification-source custom/source`, defaults to target root directory
 
 To run the command right click the target and select `LocalizationCommand` in Xcode.
 
 Example of a full command: 
 
-`--swiftgen-config custom/path/swiftgen.yml --phrase-config custom/path/.phrase.yml ModuleA ModuleB ModuleC`
+`--verify-only true --verification-source custom/source --generate-report true --swiftgen-config custom/path/swiftgen.yml --phrase-config custom/path/.phrase.yml ModuleA ModuleB ModuleC`
 

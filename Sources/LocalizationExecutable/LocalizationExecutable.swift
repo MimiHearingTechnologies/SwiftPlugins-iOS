@@ -10,6 +10,15 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
+    @Option(help: "If set to true, only verify translations step is completed")
+    var verifyOnly: Bool = false
+
+    @Option(help: "If set to true, verify translations step generates `TranslationsVerificationReport`")
+    var generateReport: Bool = false
+
+    @Option(help: "Source directory for verification step")
+    var verificationSource: String = "."
+
     @Option(help: "Phrase config path")
     var phraseConfig: String = "./.phrase.yml"
 
@@ -23,8 +32,13 @@ struct LocalizationExecutable: ParsableCommand {
         let executor = ShellExecutor()
         let logger = Logger()
 
+        guard !verifyOnly else {
+            verifyTranslations(logger: logger)
+            return
+        }
+
         do {
-            separatorLog(logger,text: "Starting to pull files from Phrase...")
+            separatorLog(logger, text: "Starting to pull files from Phrase...")
             let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             logger.log(try executor.execute(shellCommand))
@@ -43,14 +57,7 @@ struct LocalizationExecutable: ParsableCommand {
             throw error
         }
 
-        do {
-            separatorLog(logger,text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules)
-            verificator.verifyTranslations()
-        } catch {
-            logger.log(error.localizedDescription)
-            throw error
-        }
+        verifyTranslations(logger: logger)
     }
 
     private func separatorLog(_ logger: Logger, text: String) {
@@ -58,6 +65,16 @@ struct LocalizationExecutable: ParsableCommand {
             -------------------------------------
             \(text)
             """)
+    }
+
+    private func verifyTranslations(logger: Logger) {
+        do {
+            separatorLog(logger, text: "Starting to verify translations.")
+            let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
+            verificator.verifyTranslations(shouldGenerateReportFile: generateReport)
+        } catch {
+            logger.log(error.localizedDescription)
+        }
     }
 }
 
