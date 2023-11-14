@@ -32,6 +32,10 @@ struct LocalizationExecutable: ParsableCommand {
         let executor = ShellExecutor()
         let logger = Logger()
 
+        if modules.isEmpty {
+            self.modules = extractModules()
+        }
+
         guard !verifyOnly else {
             verifyTranslations(logger: logger)
             return
@@ -75,6 +79,23 @@ struct LocalizationExecutable: ParsableCommand {
         } catch {
             logger.log(error.localizedDescription)
         }
+    }
+
+    /// Method used to extract modules from swiftgen config
+    /// The following format is expected: #MODULES: module_A module_B module_C
+    private func extractModules() -> [String] {
+        guard
+            let swiftgenData = FileManager.default.contents(atPath: swiftgenConfig),
+            let text = String(data: swiftgenData, encoding: .utf8)?.replacingOccurrences(of: " ", with: ""),
+            let modules = text.components(separatedBy: CharacterSet.newlines).first,
+            modules.contains("#MODULES:") else {
+            return []
+        }
+
+        let split = modules.components(separatedBy: "#MODULES:")
+        guard split.count > 1 else { return [] }
+
+        return split[1].components(separatedBy: ",")
     }
 }
 
