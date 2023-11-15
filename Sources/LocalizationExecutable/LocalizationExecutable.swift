@@ -81,21 +81,16 @@ struct LocalizationExecutable: ParsableCommand {
         }
     }
 
-    /// Method used to extract modules from swiftgen config
-    /// The following format is expected: #MODULES: module_A module_B module_C
+
     private func extractModules() -> [String] {
         guard
             let swiftgenData = FileManager.default.contents(atPath: swiftgenConfig),
-            let text = String(data: swiftgenData, encoding: .utf8)?.replacingOccurrences(of: " ", with: ""),
-            let modules = text.components(separatedBy: CharacterSet.newlines).first,
-            modules.contains("#MODULES:") else {
+            let text = String(data: swiftgenData, encoding: .utf8) else {
             return []
         }
 
-        let split = modules.components(separatedBy: "#MODULES:")
-        guard split.count > 1 else { return [] }
-
-        return split[1].components(separatedBy: ",")
+        let extractor = ModuleExtractor(text: text)
+        return extractor.extractModules()
     }
 }
 
@@ -131,4 +126,29 @@ extension LocalizationExecutable {
         }
     }
 
+}
+
+// MARK: - ModuleExtractor
+
+extension LocalizationExecutable {
+
+    /// Extractor used to extract modules from swiftgen config
+    /// The following format is expected as first line of the text: #MODULES: module_A module_B module_C
+    struct ModuleExtractor {
+
+        var text: String
+
+        func extractModules() -> [String] {
+            guard
+                let modules = text.replacingOccurrences(of: " ", with: "").components(separatedBy: CharacterSet.newlines).first,
+                modules.contains("#MODULES:") else {
+                return []
+            }
+
+            let split = modules.components(separatedBy: "#MODULES:")
+            guard split.count > 1 else { return [] }
+
+            return split[1].components(separatedBy: ",")
+        }
+    }
 }
