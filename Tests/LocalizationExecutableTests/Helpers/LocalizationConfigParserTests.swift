@@ -1,6 +1,6 @@
 //
 //  LocalizationConfigParserTests.swift
-//  
+//
 //
 //  Created by Kosta Nedeljkovic on 15/11/2023.
 //
@@ -10,42 +10,76 @@ import XCTest
 
 final class LocalizationConfigParserTests: XCTestCase {
 
-//    func test_extract_returnsEmptyArrayForEmptyText() {
-//        let sut = LocalizationExecutable.ModuleExtractor(text: "")
-//
-//        XCTAssertEqual(sut.extractModules(), [])
-//    }
-//
-//    func test_extract_returnsEmptyArrayForTextInWrongOrder() {
-//        let text = """
-//            Should be on top
-//
-//            #MODULES:A,B,C
-//        """
-//
-//        let sut = LocalizationExecutable.ModuleExtractor(text: text)
-//
-//        XCTAssertEqual(sut.extractModules(), [])
-//    }
-//
-//    func test_extract_returnsModulesForCorrectText() {
-//        let text = """
-//            #MODULES: A, B, C
-//        """
-//
-//        let sut = LocalizationExecutable.ModuleExtractor(text: text)
-//
-//        XCTAssertEqual(sut.extractModules(), ["A", "B", "C"])
-//    }
-//
-//    func test_extract_returnsModulesForTextWithoutSpaces() {
-//        let text = """
-//            #MODULES:A,B,C
-//        """
-//
-//        let sut = LocalizationExecutable.ModuleExtractor(text: text)
-//
-//        XCTAssertEqual(sut.extractModules(), ["A", "B", "C"])
-//    }
+    func test_parse_emptyTextConfig() {
+        let sut = LocalizationConfigParser(text: "")
+
+        let expected = defaultParsed
+        let result = try? sut.parse()
+
+        XCTAssertEqual(result, expected)
+    }
+
+    func test_parse_validTextConfig() {
+        let text = """
+            phrase: .phrase.yml
+            swiftgen: SwiftGen/swiftgen-localization.yml
+            modules: MimiSDK, MimiTestKit, MimiAuthKit
+            verification-source: ./verification/path
+            verify-only: false
+            generate-report: true
+        """
+        let sut = LocalizationConfigParser(text: text)
+        let expected = LocalizationConfigParser.ConfigArguments(modules: ["MimiSDK", "MimiTestKit", "MimiAuthKit"],
+                                                                phrase: ".phrase.yml",
+                                                                swiftgen: "SwiftGen/swiftgen-localization.yml",
+                                                                verificationSource: "./verification/path",
+                                                                generateReport: true,
+                                                                verifyOnly: false)
+
+        let result = try? sut.parse()
+
+        XCTAssertEqual(result, expected)
+    }
+
+    func test_parse_missingColonTextThrowsError() {
+        let text = """
+            phrase .phrase.yml
+            swiftgen: SwiftGen/swiftgen-localization.yml
+            """
+        let sut = LocalizationConfigParser(text: text)
+
+        do {
+            let _ = try sut.parse()
+            XCTFail()
+        } catch {
+            XCTAssertEqual(error as! LocalizationConfigParser.ParsingError, LocalizationConfigParser.ParsingError.invalidFormat(line: "phrase .phrase.yml"))
+        }
+    }
+
+    func test_parse_invalidBooleanTextThrowsError() {
+        let text = """
+            verify-only: tru
+            swiftgen: SwiftGen/swiftgen-localization.yml
+            """
+        let sut = LocalizationConfigParser(text: text)
+
+        do {
+            let _ = try sut.parse()
+            XCTFail("Expected `ParsingError.boolFormat`")
+        } catch {
+            XCTAssertEqual(error as! LocalizationConfigParser.ParsingError, LocalizationConfigParser.ParsingError.boolFormat(line: "verify-only: tru"))
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var defaultParsed: LocalizationConfigParser.ConfigArguments {
+        LocalizationConfigParser.ConfigArguments(modules: [],
+                                                 phrase: "",
+                                                 swiftgen: "",
+                                                 verificationSource: ".",
+                                                 generateReport: false,
+                                                 verifyOnly: false)
+    }
 
 }

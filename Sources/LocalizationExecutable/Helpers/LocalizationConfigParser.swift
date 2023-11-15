@@ -37,7 +37,7 @@ struct LocalizationConfigParser {
         var verifyOnly = false
 
         // TODO: - Improve code by using regex
-        let lines = text.replacingOccurrences(of: " ", with: "").components(separatedBy: CharacterSet.newlines)
+        let lines = text.components(separatedBy: CharacterSet.newlines)
         do {
             for line in lines {
                 if line.contains(Parameter.modules.name) {
@@ -60,7 +60,7 @@ struct LocalizationConfigParser {
                     generateReport = try parseBool(from: line, separator: Parameter.generateReport.name)
                     continue
                 }
-                if line.contains(Parameter.verificationSource.name) {
+                if line.contains(Parameter.verifyOnly.name) {
                     verifyOnly = try parseBool(from: line, separator: Parameter.verifyOnly.name)
                     continue
                 }
@@ -79,27 +79,30 @@ struct LocalizationConfigParser {
     }
 
     private func parsePath(from text: String, separator: String) throws -> String {
-        let split = text.components(separatedBy: "\(separator):")
+        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "\(separator):")
 
         guard split.count > 1 else {
-            throw ParsingError.pathFormat(line: text)
+            throw ParsingError.invalidFormat(line: text)
         }
 
         return split[1]
     }
 
     func parseBool(from text: String, separator: String) throws -> Bool {
-        let split = text.components(separatedBy: "\(separator):")
+        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "\(separator):")
 
         guard split.count > 1 else {
-            throw ParsingError.boolFormat(line: text)
+            throw ParsingError.invalidFormat(line: text)
         }
 
-        return Bool(split[1]) ?? false
+        guard let value = Bool(split[1]) else {
+            throw ParsingError.boolFormat(line: text)
+        }
+        return value
     }
 
     private func parseModules(from text: String) throws -> [String] {
-        let split = text.components(separatedBy: "modules:")
+        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "modules:")
         guard split.count > 1 else { return [] }
 
         return split[1].components(separatedBy: ",")
@@ -110,7 +113,7 @@ struct LocalizationConfigParser {
 
 extension LocalizationConfigParser {
 
-    struct ConfigArguments {
+    struct ConfigArguments: Equatable {
         var modules: [String]
         var phrase: String
         var swiftgen: String
@@ -124,16 +127,16 @@ extension LocalizationConfigParser {
 
 extension LocalizationConfigParser {
 
-    enum ParsingError: Error, CustomStringConvertible {
-        case pathFormat(line: String)
+    enum ParsingError: Error, CustomStringConvertible, Equatable {
+        case invalidFormat(line: String)
         case boolFormat(line: String)
 
         var description: String {
             switch self {
-            case let .pathFormat(line):
-                return "Wrong path on line: \(line)"
+            case let .invalidFormat(line):
+                return "Invalid format for line: \(line)"
             case let .boolFormat(line):
-                return "Wrong bool formatting on line: \(line)"
+                return "Wrong format for boolean on line: \(line)"
             }
         }
     }
