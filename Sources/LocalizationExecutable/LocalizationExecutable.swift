@@ -19,31 +19,25 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Source directory for verification step")
     var verificationSource: String = "."
 
-    @Option(help: "Phrase config path")
-    var phraseConfig: String = "./.phrase.yml"
-
-    @Option(help: "SwiftGen config path")
-    var swiftgenConfig: String = "./SwiftGen/swiftgen-localization.yml"
-
-    // Modules used for verifying translations
-    @Argument(parsing: .remaining) public var modules: [String] = []
+    @Option(help: "Localization command config")
+    var config: String = "./localization-config.yml"
 
     mutating func run() throws {
         let executor = ShellExecutor()
         let logger = Logger()
 
-        if modules.isEmpty {
-            self.modules = extractModules()
+        guard let config = readConfig(logger) else {
+            return
         }
 
         guard !verifyOnly else {
-            verifyTranslations(logger: logger)
+            verifyTranslations(logger: logger, modules: config.modules)
             return
         }
 
         do {
             separatorLog(logger, text: "Starting to pull files from Phrase...")
-            let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
+            let phraseCommand = LocalizationCommand.pullPhrase(config: config.phrase)
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             logger.log(try executor.execute(shellCommand))
         } catch {
@@ -53,7 +47,7 @@ struct LocalizationExecutable: ParsableCommand {
 
         do {
             separatorLog(logger,text: "Starting to generate Localization.swift")
-            let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
+            let localizationCommand = LocalizationCommand.generateLocalization(config: config.swiftgen)
             let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
             logger.log(try executor.execute(shellCommand))
         } catch {
@@ -61,7 +55,7 @@ struct LocalizationExecutable: ParsableCommand {
             throw error
         }
 
-        verifyTranslations(logger: logger)
+        verifyTranslations(logger: logger, modules: config.modules)
     }
 
     private func separatorLog(_ logger: Logger, text: String) {
@@ -71,7 +65,7 @@ struct LocalizationExecutable: ParsableCommand {
             """)
     }
 
-    private func verifyTranslations(logger: Logger) {
+    private func verifyTranslations(logger: Logger, modules: [String]) {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
             let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
@@ -82,15 +76,22 @@ struct LocalizationExecutable: ParsableCommand {
     }
 
 
-    private func extractModules() -> [String] {
+    private func readConfig(_ logger: Logger) -> ConfigParameters? {
         guard
-            let swiftgenData = FileManager.default.contents(atPath: swiftgenConfig),
+            let swiftgenData = FileManager.default.contents(atPath: config),
             let text = String(data: swiftgenData, encoding: .utf8) else {
-            return []
+            return nil
         }
 
-        let extractor = ModuleExtractor(text: text)
-        return extractor.extractModules()
+        let parser = LocalizationConfigParser(text: text)
+
+        do {
+            let config = try parser.parse()
+            return config
+        } catch {
+            logger.log(error.localizedDescription)
+            return nil
+        }
     }
 }
 
@@ -126,29 +127,4 @@ extension LocalizationExecutable {
         }
     }
 
-}
-
-// MARK: - ModuleExtractor
-
-extension LocalizationExecutable {
-
-    /// Extractor used to extract modules from swiftgen config
-    /// The following format is expected as first line of the text: #MODULES: module_A module_B module_C
-    struct ModuleExtractor {
-
-        var text: String
-
-        func extractModules() -> [String] {
-            guard
-                let modules = text.replacingOccurrences(of: " ", with: "").components(separatedBy: CharacterSet.newlines).first,
-                modules.contains("#MODULES:") else {
-                return []
-            }
-
-            let split = modules.components(separatedBy: "#MODULES:")
-            guard split.count > 1 else { return [] }
-
-            return split[1].components(separatedBy: ",")
-        }
-    }
 }
