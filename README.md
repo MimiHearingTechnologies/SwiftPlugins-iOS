@@ -21,6 +21,10 @@ Following flags & arguments need to be provided:
 
 - List of modules for verifying translations, provided at the end: `ModuleA ModuleB moduleC`
 
+List of modules can be also provided through `swiftgen` config file, at the top of the file in the following format:
+
+`#MODULES: Module_A, Module_B, Module_C`
+
 The following flags are optional:
 
 - Verify only (only runs verify translations step): `--verify-only true`, default value is `false`
