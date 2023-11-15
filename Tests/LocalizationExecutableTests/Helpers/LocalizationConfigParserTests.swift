@@ -1,5 +1,5 @@
 //
-//  ModuleExtractorTests.swift
+//  LocalizationConfigParserTests.swift
 //  
 //
 //  Created by Kosta Nedeljkovic on 15/11/2023.

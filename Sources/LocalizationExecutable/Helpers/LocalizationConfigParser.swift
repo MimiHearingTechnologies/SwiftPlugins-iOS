@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  LocalizationConfigParser.swift
 //  
 //
 //  Created by Kosta Nedeljkovic on 15/11/2023.
@@ -7,43 +7,61 @@
 
 import Foundation
 
-enum ParsingError: Error, CustomStringConvertible {
-    case wrongFormat(line: String)
-
-    var description: String {
-        switch self {
-        case .wrongFormat:
-            return ""
-        }
-    }
-}
-
 struct LocalizationConfigParser {
 
     enum Parameter: String {
-        case phrase, swiftgen, modules
+        case phrase, swiftgen, modules, verificationSource, generateReport, verifyOnly
+
+        var name: String {
+            switch self {
+            case .phrase, .swiftgen, .modules:
+                return self.rawValue
+            case .verificationSource:
+                return "verification-source"
+            case .verifyOnly:
+                return "verify-only"
+            case .generateReport:
+                return "generate-report"
+            }
+        }
     }
 
     var text: String
 
-    func parse() throws -> ConfigParameters {
+    func parse() throws -> ConfigArguments {
         var modules: [String] = []
         var phrase: String = ""
         var swiftgen: String = ""
+        var verificationSource: String = "."
+        var generateReport = false
+        var verifyOnly = false
 
+        // TODO: - Improve code by using regex
         let lines = text.replacingOccurrences(of: " ", with: "").components(separatedBy: CharacterSet.newlines)
         do {
             for line in lines {
-                if line.contains(Parameter.modules.rawValue) {
+                if line.contains(Parameter.modules.name) {
                     modules = try parseModules(from: line)
                     continue
                 }
-                if line.contains(Parameter.phrase.rawValue) {
-                    phrase = try parsePath(from: line, separator: Parameter.phrase.rawValue)
+                if line.contains(Parameter.phrase.name) {
+                    phrase = try parsePath(from: line, separator: Parameter.phrase.name)
                     continue
                 }
-                if line.contains(Parameter.swiftgen.rawValue) {
-                    swiftgen = try parsePath(from: line, separator: Parameter.swiftgen.rawValue)
+                if line.contains(Parameter.swiftgen.name) {
+                    swiftgen = try parsePath(from: line, separator: Parameter.swiftgen.name)
+                    continue
+                }
+                if line.contains(Parameter.verificationSource.name) {
+                    verificationSource = try parsePath(from: line, separator: Parameter.verificationSource.name)
+                    continue
+                }
+                if line.contains(Parameter.generateReport.name) {
+                    generateReport = try parseBool(from: line, separator: Parameter.generateReport.name)
+                    continue
+                }
+                if line.contains(Parameter.verificationSource.name) {
+                    verifyOnly = try parseBool(from: line, separator: Parameter.verifyOnly.name)
                     continue
                 }
             }
@@ -51,7 +69,12 @@ struct LocalizationConfigParser {
             throw error
         }
 
-        let config = ConfigParameters(modules: modules, phrase: phrase, swiftgen: swiftgen)
+        let config = ConfigArguments(modules: modules,
+                                     phrase: phrase,
+                                     swiftgen: swiftgen,
+                                     verificationSource: verificationSource,
+                                     generateReport: generateReport,
+                                     verifyOnly: verifyOnly)
         return config
     }
 
@@ -59,10 +82,20 @@ struct LocalizationConfigParser {
         let split = text.components(separatedBy: "\(separator):")
 
         guard split.count > 1 else {
-            throw ParsingError.wrongFormat(line: text)
+            throw ParsingError.pathFormat(line: text)
         }
 
         return split[1]
+    }
+
+    func parseBool(from text: String, separator: String) throws -> Bool {
+        let split = text.components(separatedBy: "\(separator):")
+
+        guard split.count > 1 else {
+            throw ParsingError.boolFormat(line: text)
+        }
+
+        return Bool(split[1]) ?? false
     }
 
     private func parseModules(from text: String) throws -> [String] {
@@ -73,8 +106,35 @@ struct LocalizationConfigParser {
     }
 }
 
-struct ConfigParameters {
-    var modules: [String]
-    var phrase: String
-    var swiftgen: String
+// MARK: - ConfigParameters
+
+extension LocalizationConfigParser {
+
+    struct ConfigArguments {
+        var modules: [String]
+        var phrase: String
+        var swiftgen: String
+        var verificationSource: String
+        var generateReport: Bool
+        var verifyOnly: Bool
+    }
+}
+
+// MARK: - ParsingError
+
+extension LocalizationConfigParser {
+
+    enum ParsingError: Error, CustomStringConvertible {
+        case pathFormat(line: String)
+        case boolFormat(line: String)
+
+        var description: String {
+            switch self {
+            case let .pathFormat(line):
+                return "Wrong path on line: \(line)"
+            case let .boolFormat(line):
+                return "Wrong bool formatting on line: \(line)"
+            }
+        }
+    }
 }

@@ -10,15 +10,6 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
-    @Option(help: "If set to true, only verify translations step is completed")
-    var verifyOnly: Bool = false
-
-    @Option(help: "If set to true, verify translations step generates `TranslationsVerificationReport`")
-    var generateReport: Bool = false
-
-    @Option(help: "Source directory for verification step")
-    var verificationSource: String = "."
-
     @Option(help: "Localization command config")
     var config: String = "./localization-config.yml"
 
@@ -30,8 +21,11 @@ struct LocalizationExecutable: ParsableCommand {
             return
         }
 
-        guard !verifyOnly else {
-            verifyTranslations(logger: logger, modules: config.modules)
+        guard !config.verifyOnly else {
+            verifyTranslations(logger: logger,
+                               modules: config.modules,
+                               source: config.verificationSource,
+                               generateReport: config.generateReport)
             return
         }
 
@@ -55,7 +49,10 @@ struct LocalizationExecutable: ParsableCommand {
             throw error
         }
 
-        verifyTranslations(logger: logger, modules: config.modules)
+        verifyTranslations(logger: logger, 
+                           modules: config.modules,
+                           source: config.verificationSource,
+                           generateReport: config.generateReport)
     }
 
     private func separatorLog(_ logger: Logger, text: String) {
@@ -65,10 +62,10 @@ struct LocalizationExecutable: ParsableCommand {
             """)
     }
 
-    private func verifyTranslations(logger: Logger, modules: [String]) {
+    private func verifyTranslations(logger: Logger, modules: [String], source: String, generateReport: Bool) {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
+            let verificator = try TranslationsVerificator(with: modules, sourceDir: source)
             verificator.verifyTranslations(shouldGenerateReportFile: generateReport)
         } catch {
             logger.log(error.localizedDescription)
@@ -76,7 +73,7 @@ struct LocalizationExecutable: ParsableCommand {
     }
 
 
-    private func readConfig(_ logger: Logger) -> ConfigParameters? {
+    private func readConfig(_ logger: Logger) -> LocalizationConfigParser.ConfigArguments? {
         guard
             let swiftgenData = FileManager.default.contents(atPath: config),
             let text = String(data: swiftgenData, encoding: .utf8) else {
