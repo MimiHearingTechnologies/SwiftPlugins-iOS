@@ -86,8 +86,8 @@ extension LocalizationConfigParser {
 
     struct ConfigArguments: Equatable {
         var modules: [String] = []
-        var phrase: String = ""
-        var swiftgen: String = ""
+        var phrase: String = ".phrase.yml"
+        var swiftgen: String = "swiftgen.yml"
         var verificationSource: String = "."
         var generateReport = false
         var verifyOnly = false

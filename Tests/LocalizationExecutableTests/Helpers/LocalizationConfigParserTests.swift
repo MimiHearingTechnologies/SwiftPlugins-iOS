@@ -75,8 +75,8 @@ final class LocalizationConfigParserTests: XCTestCase {
 
     private var defaultParsed: LocalizationConfigParser.ConfigArguments {
         LocalizationConfigParser.ConfigArguments(modules: [],
-                                                 phrase: "",
-                                                 swiftgen: "",
+                                                 phrase: ".phrase.yml",
+                                                 swiftgen: "swiftgen.yml",
                                                  verificationSource: ".",
                                                  generateReport: false,
                                                  verifyOnly: false)
