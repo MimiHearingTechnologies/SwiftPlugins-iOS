@@ -67,7 +67,7 @@ final class LocalizationConfigParserTests: XCTestCase {
             let _ = try sut.parse()
             XCTFail("Expected `ParsingError.boolFormat`")
         } catch {
-            XCTAssertEqual(error as! LocalizationConfigParser.ParsingError, LocalizationConfigParser.ParsingError.boolFormat(line: "verify-only: tru"))
+            XCTAssertEqual(error as! LocalizationConfigParser.ParsingError, LocalizationConfigParser.ParsingError.invalidBoolFormat(line: "verify-only: tru"))
         }
     }
 

@@ -9,7 +9,7 @@ import Foundation
 
 struct LocalizationConfigParser {
 
-    enum Parameter: String {
+    enum Parameter: String, CaseIterable {
         case phrase, swiftgen, modules, verificationSource, generateReport, verifyOnly
 
         var name: String {
@@ -29,83 +29,54 @@ struct LocalizationConfigParser {
     var text: String
 
     func parse() throws -> ConfigArguments {
-        var modules: [String] = []
-        var phrase: String = ""
-        var swiftgen: String = ""
-        var verificationSource: String = "."
-        var generateReport = false
-        var verifyOnly = false
+        var config = ConfigArguments()
 
-        // TODO: - Improve code by using regex
         let lines = text.components(separatedBy: CharacterSet.newlines)
-        do {
-            for line in lines {
-                if line.contains(Parameter.modules.name) {
-                    modules = try parseModules(from: line)
-                    continue
-                }
-                if line.contains(Parameter.phrase.name) {
-                    phrase = try parsePath(from: line, separator: Parameter.phrase.name)
-                    continue
-                }
-                if line.contains(Parameter.swiftgen.name) {
-                    swiftgen = try parsePath(from: line, separator: Parameter.swiftgen.name)
-                    continue
-                }
-                if line.contains(Parameter.verificationSource.name) {
-                    verificationSource = try parsePath(from: line, separator: Parameter.verificationSource.name)
-                    continue
-                }
-                if line.contains(Parameter.generateReport.name) {
-                    generateReport = try parseBool(from: line, separator: Parameter.generateReport.name)
-                    continue
-                }
-                if line.contains(Parameter.verifyOnly.name) {
-                    verifyOnly = try parseBool(from: line, separator: Parameter.verifyOnly.name)
-                    continue
+
+        for line in lines {
+            for parameter in Parameter.allCases {
+                if line.contains(parameter.name) {
+                    try parseParameter(parameter, from: line, into: &config)
                 }
             }
-        } catch {
-            throw error
         }
 
-        let config = ConfigArguments(modules: modules,
-                                     phrase: phrase,
-                                     swiftgen: swiftgen,
-                                     verificationSource: verificationSource,
-                                     generateReport: generateReport,
-                                     verifyOnly: verifyOnly)
         return config
     }
 
-    private func parsePath(from text: String, separator: String) throws -> String {
-        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "\(separator):")
+    private func parseParameter(_ parameter: Parameter, from line: String, into config: inout ConfigArguments) throws {
+        let key = parameter.name
+        let split = line.replacingOccurrences(of: " ", with: "").components(separatedBy: "\(key):")
 
         guard split.count > 1 else {
-            throw ParsingError.invalidFormat(line: text)
+            throw ParsingError.invalidFormat(line: line)
         }
 
-        return split[1]
+        switch parameter {
+        case .modules:
+            config.modules = try parseModules(from: split[1])
+        case .phrase:
+            config.phrase = split[1]
+        case .swiftgen:
+            config.swiftgen = split[1]
+        case .verificationSource:
+            config.verificationSource = split[1]
+        case .generateReport:
+            config.generateReport = try parseBool(from: split[1], line: line)
+        case .verifyOnly:
+            config.verifyOnly = try parseBool(from: split[1], line: line)
+        }
     }
 
-    func parseBool(from text: String, separator: String) throws -> Bool {
-        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "\(separator):")
-
-        guard split.count > 1 else {
-            throw ParsingError.invalidFormat(line: text)
-        }
-
-        guard let value = Bool(split[1]) else {
-            throw ParsingError.boolFormat(line: text)
+    private func parseBool(from text: String, line: String) throws -> Bool {
+        guard let value = Bool(text) else {
+            throw ParsingError.invalidBoolFormat(line: line)
         }
         return value
     }
 
     private func parseModules(from text: String) throws -> [String] {
-        let split = text.replacingOccurrences(of: " ", with: "").components(separatedBy: "modules:")
-        guard split.count > 1 else { return [] }
-
-        return split[1].components(separatedBy: ",")
+        return text.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 }
 
@@ -114,12 +85,12 @@ struct LocalizationConfigParser {
 extension LocalizationConfigParser {
 
     struct ConfigArguments: Equatable {
-        var modules: [String]
-        var phrase: String
-        var swiftgen: String
-        var verificationSource: String
-        var generateReport: Bool
-        var verifyOnly: Bool
+        var modules: [String] = []
+        var phrase: String = ""
+        var swiftgen: String = ""
+        var verificationSource: String = "."
+        var generateReport = false
+        var verifyOnly = false
     }
 }
 
@@ -129,14 +100,14 @@ extension LocalizationConfigParser {
 
     enum ParsingError: Error, CustomStringConvertible, Equatable {
         case invalidFormat(line: String)
-        case boolFormat(line: String)
+        case invalidBoolFormat(line: String)
 
         var description: String {
             switch self {
             case let .invalidFormat(line):
                 return "Invalid format for line: \(line)"
-            case let .boolFormat(line):
-                return "Wrong format for boolean on line: \(line)"
+            case let .invalidBoolFormat(line):
+                return "Invalid format for boolean on line: \(line)"
             }
         }
     }
