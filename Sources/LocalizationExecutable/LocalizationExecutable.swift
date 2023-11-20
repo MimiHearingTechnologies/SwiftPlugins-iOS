@@ -10,36 +10,28 @@ struct LocalizationExecutable: ParsableCommand {
     @Option(help: "Target module")
     var target: String?
 
-    @Option(help: "If set to true, only verify translations step is completed")
-    var verifyOnly: Bool = false
-
-    @Option(help: "If set to true, verify translations step generates `TranslationsVerificationReport`")
-    var generateReport: Bool = false
-
-    @Option(help: "Source directory for verification step")
-    var verificationSource: String = "."
-
-    @Option(help: "Phrase config path")
-    var phraseConfig: String = "./.phrase.yml"
-
-    @Option(help: "SwiftGen config path")
-    var swiftgenConfig: String = "./SwiftGen/swiftgen-localization.yml"
-
-    // Modules used for verifying translations
-    @Argument(parsing: .remaining) public var modules: [String] = []
+    @Option(help: "Localization command config")
+    var config: String = "./localization-config.yml"
 
     mutating func run() throws {
         let executor = ShellExecutor()
         let logger = Logger()
 
-        guard !verifyOnly else {
-            verifyTranslations(logger: logger)
+        guard let config = readConfig(logger) else {
+            return
+        }
+
+        guard !config.verifyOnly else {
+            verifyTranslations(logger: logger,
+                               modules: config.modules,
+                               source: config.verificationSource,
+                               generateReport: config.generateReport)
             return
         }
 
         do {
             separatorLog(logger, text: "Starting to pull files from Phrase...")
-            let phraseCommand = LocalizationCommand.pullPhrase(config: phraseConfig )
+            let phraseCommand = LocalizationCommand.pullPhrase(config: config.phrase)
             let shellCommand = ShellCommand(commandPath: phraseCommand.cmdPath, arguments: phraseCommand.args)
             logger.log(try executor.execute(shellCommand))
         } catch {
@@ -49,7 +41,7 @@ struct LocalizationExecutable: ParsableCommand {
 
         do {
             separatorLog(logger,text: "Starting to generate Localization.swift")
-            let localizationCommand = LocalizationCommand.generateLocalization(config: swiftgenConfig)
+            let localizationCommand = LocalizationCommand.generateLocalization(config: config.swiftgen)
             let shellCommand = ShellCommand(commandPath: localizationCommand.cmdPath, arguments: localizationCommand.args)
             logger.log(try executor.execute(shellCommand))
         } catch {
@@ -57,7 +49,10 @@ struct LocalizationExecutable: ParsableCommand {
             throw error
         }
 
-        verifyTranslations(logger: logger)
+        verifyTranslations(logger: logger, 
+                           modules: config.modules,
+                           source: config.verificationSource,
+                           generateReport: config.generateReport)
     }
 
     private func separatorLog(_ logger: Logger, text: String) {
@@ -67,13 +62,32 @@ struct LocalizationExecutable: ParsableCommand {
             """)
     }
 
-    private func verifyTranslations(logger: Logger) {
+    private func verifyTranslations(logger: Logger, modules: [String], source: String, generateReport: Bool) {
         do {
             separatorLog(logger, text: "Starting to verify translations.")
-            let verificator = try TranslationsVerificator(with: modules, sourceDir: verificationSource)
+            let verificator = try TranslationsVerificator(with: modules, sourceDir: source)
             verificator.verifyTranslations(shouldGenerateReportFile: generateReport)
         } catch {
             logger.log(error.localizedDescription)
+        }
+    }
+
+
+    private func readConfig(_ logger: Logger) -> LocalizationConfigParser.ConfigArguments? {
+        guard
+            let swiftgenData = FileManager.default.contents(atPath: config),
+            let text = String(data: swiftgenData, encoding: .utf8) else {
+            return nil
+        }
+
+        let parser = LocalizationConfigParser(text: text)
+
+        do {
+            let config = try parser.parse()
+            return config
+        } catch {
+            logger.log(error.localizedDescription)
+            return nil
         }
     }
 }
