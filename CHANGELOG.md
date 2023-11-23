@@ -1,21 +1,47 @@
 # Changelog
+All notable changes to this project will be documented in this file.
+SwiftPlugins adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- Collect changes until next release -->
-## Unreleased
+## 2.0.0
+Released on 2023-11-21
 
-### Added
-### Changed
-### Removed
-
-<!--
-## [1.1.3](https://github.com/MimiHearingTechnologies/YOUR_REPO_NAME/releases/tag/v1.1.3) - 2019-11-27
+**This relase restrucutres the `LocalizationCommand` command line arguments. Instead of using multiple arguments, a config argument is now supported, which contains all the necessary parameters for the command.**
 
 ### Added
-- Chinese translations
-
-### Changed
-- Replaced `vector` with `array` where possible
+- `config` command line argument in `LocalizationExecutable`
 
 ### Removed
-- The cat picture on the 'about' screen.
--->
+The following command line arguments have been removed in `LocalizationExecutable`:
+
+- `phraseConfig`
+- `swiftgenConfig`
+- `modules`
+- `verificationSource`
+- `verifyOnly`
+- `generateReport`
+
+---
+
+## 1.1.0
+Released on 2023-11-14
+
+**This release adds support for additional command line arguments that enable us to run the verification step only.**
+
+### Added
+- `verifyOnly` command line argument in `LocalizationExecutable`
+- `verificationSource` command line argument in `LocalizationExecutable`
+- `generateReport` command line argument in `LocalizationExecutable`
+
+---
+
+## 1.0.0
+Released on 2023-11-14
+
+**First release of the SwiftPlugins package, containing LocalizationCommand plugin, which performs the following operations:**
+
+- pulls translations from Phrase using a provided phrase config
+- generates type safe translations using Swiftgen tool
+- verifies translations for provided modules** 
+
+### Added
+- `LocalizationCommand` plugin
