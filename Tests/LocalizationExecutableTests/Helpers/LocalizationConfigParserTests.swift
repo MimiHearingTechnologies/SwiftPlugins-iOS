@@ -23,13 +23,13 @@ final class LocalizationConfigParserTests: XCTestCase {
         let text = """
             phrase: .phrase.yml
             swiftgen: SwiftGen/swiftgen-localization.yml
-            modules: MimiSDK, MimiTestKit, MimiAuthKit
+            modules: A, B, C
             verification-source: ./verification/path
             verify-only: false
             generate-report: true
         """
         let sut = LocalizationConfigParser(text: text)
-        let expected = LocalizationConfigParser.ConfigArguments(modules: ["MimiSDK", "MimiTestKit", "MimiAuthKit"],
+        let expected = LocalizationConfigParser.ConfigArguments(modules: ["A", "B", "C"],
                                                                 phrase: ".phrase.yml",
                                                                 swiftgen: "SwiftGen/swiftgen-localization.yml",
                                                                 verificationSource: "./verification/path",
