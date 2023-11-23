@@ -5,7 +5,7 @@ SwiftPlugins adheres to [Semantic Versioning](http://semver.org/).
 ## 2.0.0
 Released on 2023-11-21
 
-**This relase restrucutres the `LocalizationCommand` command line arguments. Instead of using multiple arguments, a config argument is now supported, which contains all the necessary parameters for the command.**
+**This release restructures the `LocalizationCommand` command line arguments. Instead of using multiple arguments, a config argument is now supported, which contains all the necessary parameters for the command.**
 
 ### Added
 - `config` command line argument in `LocalizationExecutable`
@@ -39,9 +39,9 @@ Released on 2023-11-14
 
 **First release of the SwiftPlugins package, containing LocalizationCommand plugin, which performs the following operations:**
 
-- pulls translations from Phrase using a provided phrase config
-- generates type safe translations using Swiftgen tool
-- verifies translations for provided modules** 
+- Pulls translations from Phrase using a provided phrase config
+- Generates type safe translations using Swiftgen tool
+- Verifies translations for provided modules 
 
 ### Added
 - `LocalizationCommand` plugin
